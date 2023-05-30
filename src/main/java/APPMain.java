@@ -121,7 +121,7 @@ public class APPMain {
     private void registerUser(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "https://domotify.me/api/register.php";
+            String urlString = "http://domotify.me/api/register.php";
             String query = String.format("username=%s&password=%s", URLEncoder.encode(username, "UTF-8"), URLEncoder.encode(password, "UTF-8"));
             urlString += "?" + query;
 
@@ -155,7 +155,7 @@ public class APPMain {
     private String login(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "https://domotify.me/api/login.php";
+            String urlString = "http://domotify.me/api/login.php";
             String query = String.format("username=%s&password=%s", URLEncoder.encode(username, "UTF-8"), URLEncoder.encode(password, "UTF-8"));
             urlString += "?" + query;
 
@@ -184,7 +184,7 @@ public class APPMain {
     private boolean isAdminUser(String username) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "https://domotify.me/api/check_admin.php";
+            String urlString = "http://domotify.me/api/check_admin.php";
             String query = String.format("username=%s", URLEncoder.encode(username, "UTF-8"));
             urlString += "?" + query;
 
