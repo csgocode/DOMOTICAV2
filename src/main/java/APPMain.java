@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-
+//commit
 public class APPMain {
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -16,7 +16,7 @@ public class APPMain {
 
     public APPMain() {
         // Configurar la ventana principal
-        JFrame frame = new JFrame("DOMOTIFY v1.1: Transformando hogares, conectando vidas | Login Area");
+        JFrame frame = new JFrame("Control Domótico");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(createLoginPanel());
         frame.pack();
@@ -59,13 +59,13 @@ public class APPMain {
 
                 if (loginStatus.equals("true")) {
                     // Inicio de sesión exitoso
-                    JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
+                    JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso. Bienvenido.");
 
                     // Verificar el tipo de usuario
                     boolean isAdmin = isAdminUser(username);
 
                     // Abrir ventana de gestión de domótica
-                    openDomoticsManagementWindow(isAdmin);
+                    openDomoticsManagementWindow(isAdmin, username);
                 } else if (loginStatus.equals("bad_credentials")) {
                     // Credenciales incorrectas
                     JOptionPane.showMessageDialog(null, "Credenciales incorrectas. Inténtalo de nuevo.");
@@ -75,6 +75,7 @@ public class APPMain {
                 }
             }
         });
+
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -106,6 +107,41 @@ public class APPMain {
 
         return loginPanel;
     }
+//hola
+
+    private int checkOwnerHouse(String username) {
+        try {
+            // Construir la URL de la petición HTTP GET
+            String urlString = "http://domotify.me/api/check_ownerhouse.php";
+            String query = String.format("username=%s", URLEncoder.encode(username, "UTF-8"));
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Establecer la conexión HTTP
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Leer la respuesta del servidor
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Cerrar la conexión y el lector
+            reader.close();
+            connection.disconnect();
+
+            // Analizar la respuesta del servidor
+            return Integer.parseInt(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+
+
+
 
     private void showUserNotExistDialog(String username, String password) {
         int option = JOptionPane.showConfirmDialog(null,
@@ -114,7 +150,7 @@ public class APPMain {
 
         if (option == JOptionPane.YES_OPTION) {
             // Redirigir al usuario a la página de registro
-            registerUser(username, password); // hola klk
+            registerUser(username, password);
         }
     }
 
@@ -203,7 +239,7 @@ public class APPMain {
             connection.disconnect();
 
             // Analizar la respuesta del servidor
-            if (response.equals("true")) {
+            if (response.equals("1")) {
                 return true;
             }
         } catch (Exception e) {
@@ -213,15 +249,25 @@ public class APPMain {
         return false;
     }
 
-    private void openDomoticsManagementWindow(boolean isAdmin) {
-        if (isAdmin) {
-            openAdminDashboard();
+    private void openDomoticsManagementWindow(boolean isAdmin, String username) {
+        int ownerHouse = checkOwnerHouse(username);
+
+        if (ownerHouse != -1) {
+            if (isAdmin) {
+                openAdminDashboard();
+            } else {
+                openChildDashboard();
+            }
         } else {
-            openChildDashboard();
+            String msg = "¡Hola " + username + "!\nLamentamos informarte que tu cuenta no dispone de ningun producto ACTIVADO de Domotify.\nEn este caso tienes que ponerte en contacto con nuestro equipo de atencion al cliente para que podamos activarte los productos y configurarlos correctamente.\n\ninfo@domotify.net | +34698905854 | domotify.net";
+            JOptionPane.showMessageDialog(null, msg);
         }
     }
 
+
     private void openAdminDashboard() {
+        mainFrame = new JFrame();
+
         // Configurar la ventana de administrador
         mainFrame.dispose();
 
@@ -229,6 +275,7 @@ public class APPMain {
         adminFrame.setBounds(100, 100, 400, 300);
         adminFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         adminFrame.getContentPane().setLayout(new FlowLayout());
+        adminFrame.setLocationRelativeTo(null);
 
         JLabel lblAdmin = new JLabel("¡Bienvenido, Administrador!");
         adminFrame.getContentPane().add(lblAdmin);
@@ -237,15 +284,18 @@ public class APPMain {
     }
 
     private void openChildDashboard() {
+        mainFrame = new JFrame();
+
         // Configurar la ventana de niño
         mainFrame.dispose();
 
-        JFrame childFrame = new JFrame("Panel para niños");
+        JFrame childFrame = new JFrame("Panel de Niño");
         childFrame.setBounds(100, 100, 400, 300);
         childFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         childFrame.getContentPane().setLayout(new FlowLayout());
+        childFrame.setLocationRelativeTo(null);
 
-        JLabel lblChild = new JLabel("¡Bienvenido, Niño!");
+        JLabel lblChild = new JLabel("¡Bienvenido, pequeño!");
         childFrame.getContentPane().add(lblChild);
 
         childFrame.setVisible(true);
