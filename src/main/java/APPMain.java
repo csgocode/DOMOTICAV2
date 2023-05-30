@@ -117,7 +117,7 @@ public class APPMain {
     private int checkOwnerHouse(String username) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "http://domotify.me/api/check_ownerhouse.php";
+            String urlString = "https://domotify.net/api/check_ownerhouse.php";
             String query = String.format("username=%s", URLEncoder.encode(username, "UTF-8"));
             urlString += "?" + query;
 
@@ -162,7 +162,7 @@ public class APPMain {
     private void registerUser(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "http://domotify.me/api/register.php";
+            String urlString = "https://domotify.net/api/register.php";
             String query = String.format("username=%s&password=%s", URLEncoder.encode(username, "UTF-8"), URLEncoder.encode(password, "UTF-8"));
             urlString += "?" + query;
 
@@ -196,7 +196,7 @@ public class APPMain {
     private String login(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "http://domotify.me/api/login.php";
+            String urlString = "https://domotify.net/api/login.php";
             String query = String.format("username=%s&password=%s", URLEncoder.encode(username, "UTF-8"), URLEncoder.encode(password, "UTF-8"));
             urlString += "?" + query;
 
@@ -225,7 +225,7 @@ public class APPMain {
     private boolean isAdminUser(String username) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "http://domotify.me/api/check_admin.php";
+            String urlString = "https://domotify.net/api/check_admin.php";
             String query = String.format("username=%s", URLEncoder.encode(username, "UTF-8"));
             urlString += "?" + query;
 
@@ -273,7 +273,7 @@ public class APPMain {
     private boolean checkHasFridge(int houseId) {
         try {
             // Build the URL of the HTTP GET request
-            String urlString = "http://domotify.me/api/fridge/getFridge.php";
+            String urlString = "https://domotify.net/api/fridge/getFridge.php";
             String query = String.format("houseId=%d", houseId);
             urlString += "?" + query;
 
