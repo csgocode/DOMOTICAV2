@@ -106,7 +106,7 @@ public class APPMain {
 
         return loginPanel;
     }
-
+//hola
     private void showUserNotExistDialog(String username, String password) {
         int option = JOptionPane.showConfirmDialog(null,
                 "El usuario no existe. ¿Deseas registrar una nueva cuenta con los datos proporcionados?\n\nUsuario: " + username + "\nContraseña: " + password,
