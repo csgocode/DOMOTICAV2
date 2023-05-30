@@ -1,9 +1,9 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -424,12 +424,7 @@ public class APPMain {
         // Agregar comportamiento al clic para cada botón
         manageFridgeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                boolean hasFridge = checkHasFridge(houseId);
-                if (hasFridge) {
-                    // Código para manejar el frigorífico aquí
-                } else {
-                    JOptionPane.showMessageDialog(null, "No hay frigorífico en esta casa.");
-                }
+                manageFridge(houseId);
             }
         });
 
@@ -479,10 +474,111 @@ public class APPMain {
     }
 
     private void manageFridge(int houseId) {
-        // Este es el lugar donde puedes abrir una nueva ventana o panel para gestionar el frigorífico.
-        // También puedes llamar a las APIs de PHP desde aquí para gestionar el frigorífico.
-        // Esta es sólo una función de marcador de posición. Deberías implementarla según tus necesidades.
+        boolean hasFridge = checkHasFridge(houseId);
+        if (!hasFridge) {
+            JOptionPane.showMessageDialog(null, "No hay frigorífico en esta casa.");
+            return;
+        }
+
+        // Crear el panel y los componentes
+        JPanel panel = new JPanel();
+        JLabel fridgeNameLabel = new JLabel("Nombre del frigorífico:");
+        JTextField fridgeNameTextField = new JTextField(10);
+        JLabel fridgeTempLabel = new JLabel("Temperatura del frigorífico:");
+        JTextField fridgeTempTextField = new JTextField(10);
+        JLabel fridgeModeLabel = new JLabel("Modo del frigorífico:");
+        String[] fridgeModes = { "Eco", "Normal", "Boost" };
+        JComboBox<String> fridgeModeComboBox = new JComboBox<>(fridgeModes);
+        JButton saveButton = new JButton("Guardar cambios");
+
+        // Añadir los componentes al panel
+        panel.add(fridgeNameLabel);
+        panel.add(fridgeNameTextField);
+        panel.add(fridgeTempLabel);
+        panel.add(fridgeTempTextField);
+        panel.add(fridgeModeLabel);
+        panel.add(fridgeModeComboBox);
+        panel.add(saveButton);
+
+        // Agregar comportamiento al clic del botón de guardar
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String fridgeName = fridgeNameTextField.getText();
+                String fridgeTemp = fridgeTempTextField.getText();
+                String fridgeMode = (String) fridgeModeComboBox.getSelectedItem();
+
+                // Construir los datos para enviar
+                String urlParameters = "houseId=" + houseId + "&hasFridge=1" + "&fridgeName=" + fridgeName + "&fridgeTemp=" + fridgeTemp + "&fridgeMode=" + fridgeMode;
+
+                // Crear conexión y enviar los datos
+                try {
+                    URL url = new URL("https://domotify.net/api/fridge/updateFridge.php");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(urlParameters);
+                    wr.flush();
+                    wr.close();
+
+                    // Leer respuesta del servidor
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+
+                    // Cerrar conexiones
+                    in.close();
+                    connection.disconnect();
+
+                    // Manejar respuesta
+                    String response = content.toString();
+                    if (response.equals("success")) {
+                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // Crear el marco para la interfaz de usuario
+        // Crear el marco para la interfaz de usuario
+        JFrame frame = new JFrame("Gestión de frigorífico");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
+        frame.setSize(675, 675);
+
+        // Crear un JLayeredPane para permitir la superposición de componentes
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+
+        // Cargar imagen de fondo
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/nevera.png");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+
+        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
+
+        // Ajustar el tamaño y la posición del panel
+        panel.setBounds(50, 50, 230, 160);  // Puedes ajustar estos valores según sea necesario
+
+        // Añadir el panel al JLayeredPane en un nivel superior
+        layeredPane.add(panel, Integer.valueOf(1));
+
+        // Añadir el JLayeredPane al JFrame
+        frame.add(layeredPane);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
     }
+
+
     private void openChildDashboard() {
         mainFrame = new JFrame();
 
