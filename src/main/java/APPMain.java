@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-//commit
+
 public class APPMain {
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -21,7 +21,6 @@ public class APPMain {
         frame.setContentPane(createLoginPanel());
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.getRootPane().setDefaultButton(loginButton); //ENTER
         frame.setVisible(true);
     }
 
@@ -50,7 +49,6 @@ public class APPMain {
         passwordLabel.setForeground(Color.WHITE);
 
         loginButton = new JButton("Iniciar sesión");
-
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
@@ -123,7 +121,7 @@ public class APPMain {
     private void registerUser(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "http://domotify.me/api/register.php";
+            String urlString = "https://domotify.me/api/register.php";
             String query = String.format("username=%s&password=%s", URLEncoder.encode(username, "UTF-8"), URLEncoder.encode(password, "UTF-8"));
             urlString += "?" + query;
 
@@ -157,7 +155,7 @@ public class APPMain {
     private String login(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "http://domotify.me/api/login.php";
+            String urlString = "https://domotify.me/api/login.php";
             String query = String.format("username=%s&password=%s", URLEncoder.encode(username, "UTF-8"), URLEncoder.encode(password, "UTF-8"));
             urlString += "?" + query;
 
@@ -186,7 +184,7 @@ public class APPMain {
     private boolean isAdminUser(String username) {
         try {
             // Construir la URL de la petición HTTP GET
-            String urlString = "http://domotify.me/api/check_admin.php";
+            String urlString = "https://domotify.me/api/check_admin.php";
             String query = String.format("username=%s", URLEncoder.encode(username, "UTF-8"));
             urlString += "?" + query;
 
@@ -205,7 +203,7 @@ public class APPMain {
             connection.disconnect();
 
             // Analizar la respuesta del servidor
-            if (response.equals("1")) {
+            if (response.equals("true")) {
                 return true;
             }
         } catch (Exception e) {
@@ -224,8 +222,6 @@ public class APPMain {
     }
 
     private void openAdminDashboard() {
-        mainFrame = new JFrame();
-
         // Configurar la ventana de administrador
         mainFrame.dispose();
 
@@ -233,7 +229,6 @@ public class APPMain {
         adminFrame.setBounds(100, 100, 400, 300);
         adminFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         adminFrame.getContentPane().setLayout(new FlowLayout());
-        adminFrame.setLocationRelativeTo(null);
 
         JLabel lblAdmin = new JLabel("¡Bienvenido, Administrador!");
         adminFrame.getContentPane().add(lblAdmin);
@@ -242,8 +237,6 @@ public class APPMain {
     }
 
     private void openChildDashboard() {
-        mainFrame = new JFrame();
-
         // Configurar la ventana de niño
         mainFrame.dispose();
 
@@ -251,9 +244,8 @@ public class APPMain {
         childFrame.setBounds(100, 100, 400, 300);
         childFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         childFrame.getContentPane().setLayout(new FlowLayout());
-        childFrame.setLocationRelativeTo(null);
 
-        JLabel lblChild = new JLabel("¡Bienvenido, pequeño!");
+        JLabel lblChild = new JLabel("¡Bienvenido, Niño!");
         childFrame.getContentPane().add(lblChild);
 
         childFrame.setVisible(true);
