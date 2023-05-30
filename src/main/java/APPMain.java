@@ -21,7 +21,7 @@ public class APPMain {
         frame.setContentPane(createLoginPanel());
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.getRootPane().setDefaultButton(loginButton);
+        frame.getRootPane().setDefaultButton(loginButton); //ENTER
         frame.setVisible(true);
     }
 
