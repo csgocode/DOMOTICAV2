@@ -21,8 +21,10 @@ public class APPMain {
         frame.setContentPane(createLoginPanel());
         frame.pack();
         frame.setLocationRelativeTo(null);
+        frame.getRootPane().setDefaultButton(loginButton); // Mover esta línea aquí
         frame.setVisible(true);
     }
+
 
     private JPanel createLoginPanel() {
         JPanel loginPanel = new JPanel(new BorderLayout());
