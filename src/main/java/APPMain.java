@@ -21,7 +21,7 @@ public class APPMain {
         frame.setContentPane(createLoginPanel());
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        frame.setVisible(true);//gggg
     }
 
     private JPanel createLoginPanel() {
