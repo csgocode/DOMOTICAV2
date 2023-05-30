@@ -7,6 +7,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import org.json.JSONObject;
+
+
 //commit
 public class APPMain {
     private JTextField usernameField;
@@ -256,18 +259,55 @@ public class APPMain {
 
         if (ownerHouse != -1) {
             if (isAdmin) {
-                openAdminDashboard();
+                openAdminDashboard(ownerHouse);
             } else {
                 openChildDashboard();
             }
         } else {
-            String msg = "¡Hola " + username + "!\nLamentamos informarte que tu cuenta no dispone de ningun producto ACTIVADO de Domotify.\nEn este caso tienes que ponerte en contacto con nuestro equipo de atencion al cliente para que podamos activarte los productos y configurarlos correctamente.\n\ninfo@domotify.net | +34698905854 | domotify.net";
+            String msg = "¡Hola " + username + "!\nLamentamos informarte que tu cuenta no dispone de ningun producto ACTIVADO de Domotify.\nEn este caso tienes que ponerte en contacto con nuestro equipo de atencion al cliente para que podamos activarte los productos y configurarlos correctamente.\n\nAtencion al cliente 24h / Urgencias:\ninfo@domotify.net | +34698905854 | domotify.net";
             JOptionPane.showMessageDialog(null, msg);
         }
     }
 
 
-    private void openAdminDashboard() {
+    private boolean checkHasFridge(int houseId) {
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "http://domotify.me/api/fridge/getFridge.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            String hasFridge = jsonResponse.getString("hasFridge");
+
+            if (hasFridge.equals("1")) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+
+
+    private void openAdminDashboard(int houseId) {
         mainFrame = new JFrame();
 
         // Configurar la ventana de administrador
@@ -282,8 +322,33 @@ public class APPMain {
         JLabel lblAdmin = new JLabel("¡Bienvenido, Administrador!");
         adminFrame.getContentPane().add(lblAdmin);
 
+        boolean hasFridge = checkHasFridge(houseId);
+        if (hasFridge) {
+            JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
+            manageFridgeButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    // Llama a la función para gestionar el frigorífico
+                    manageFridge(houseId);
+                }
+            });
+            adminFrame.getContentPane().add(manageFridgeButton);
+        }
+
         adminFrame.setVisible(true);
     }
+
+
+
+    private void manageFridge(int houseId) {
+        // Este es el lugar donde puedes abrir una nueva ventana o panel para gestionar el frigorífico.
+        // También puedes llamar a las APIs de PHP desde aquí para gestionar el frigorífico.
+        // Esta es sólo una función de marcador de posición. Deberías implementarla según tus necesidades.
+    }
+
+
+
+
+
 
     private void openChildDashboard() {
         mainFrame = new JFrame();
