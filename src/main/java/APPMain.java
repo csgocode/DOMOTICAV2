@@ -21,6 +21,7 @@ public class APPMain {
         frame.setContentPane(createLoginPanel());
         frame.pack();
         frame.setLocationRelativeTo(null);
+        frame.getRootPane().setDefaultButton(loginButton);
         frame.setVisible(true);
     }
 
@@ -49,6 +50,7 @@ public class APPMain {
         passwordLabel.setForeground(Color.WHITE);
 
         loginButton = new JButton("Iniciar sesión");
+
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
