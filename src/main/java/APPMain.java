@@ -114,7 +114,7 @@ public class APPMain {
 
         if (option == JOptionPane.YES_OPTION) {
             // Redirigir al usuario a la página de registro
-            registerUser(username, password);
+            registerUser(username, password); // hola klk
         }
     }
 
