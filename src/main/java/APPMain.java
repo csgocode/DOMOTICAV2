@@ -65,7 +65,7 @@ public class APPMain {
                     boolean isAdmin = isAdminUser(username);
 
                     // Abrir ventana de gestión de domótica
-                    openDomoticsManagementWindow(isAdmin);
+                    openDomoticsManagementWindow(isAdmin, username);
                 } else if (loginStatus.equals("bad_credentials")) {
                     // Credenciales incorrectas
                     JOptionPane.showMessageDialog(null, "Credenciales incorrectas. Inténtalo de nuevo.");
@@ -75,6 +75,7 @@ public class APPMain {
                 }
             }
         });
+
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -107,6 +108,41 @@ public class APPMain {
         return loginPanel;
     }
 //hola
+
+    private int checkOwnerHouse(String username) {
+        try {
+            // Construir la URL de la petición HTTP GET
+            String urlString = "http://domotify.me/api/check_ownerhouse.php";
+            String query = String.format("username=%s", URLEncoder.encode(username, "UTF-8"));
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Establecer la conexión HTTP
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Leer la respuesta del servidor
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Cerrar la conexión y el lector
+            reader.close();
+            connection.disconnect();
+
+            // Analizar la respuesta del servidor
+            return Integer.parseInt(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+
+
+
+
     private void showUserNotExistDialog(String username, String password) {
         int option = JOptionPane.showConfirmDialog(null,
                 "El usuario no existe. ¿Deseas registrar una nueva cuenta con los datos proporcionados?\n\nUsuario: " + username + "\nContraseña: " + password,
@@ -213,13 +249,21 @@ public class APPMain {
         return false;
     }
 
-    private void openDomoticsManagementWindow(boolean isAdmin) {
-        if (isAdmin) {
-            openAdminDashboard();
+    private void openDomoticsManagementWindow(boolean isAdmin, String username) {
+        int ownerHouse = checkOwnerHouse(username);
+
+        if (ownerHouse != -1) {
+            if (isAdmin) {
+                openAdminDashboard();
+            } else {
+                openChildDashboard();
+            }
         } else {
-            openChildDashboard();
+            String msg = "¡Hola " + username + "!\nLamentamos informarte que tu cuenta no dispone de ningun producto ACTIVADO de Domotify.\nEn este caso tienes que ponerte en contacto con nuestro equipo de atencion al cliente para que podamos activarte los productos y configurarlos correctamente.\n\ninfo@domotify.net | +34698905854 | domotify.net";
+            JOptionPane.showMessageDialog(null, msg);
         }
     }
+
 
     private void openAdminDashboard() {
         mainFrame = new JFrame();
