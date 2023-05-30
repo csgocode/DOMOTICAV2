@@ -19,7 +19,7 @@ public class APPMain {
 
     public APPMain() {
         // Configurar la ventana principal
-        JFrame frame = new JFrame("Control Domótico");
+        JFrame frame = new JFrame("DOMOTIFY v1.2: Transformando hogares, conectando vidas.");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(createLoginPanel());
         frame.pack();
@@ -143,11 +143,6 @@ public class APPMain {
 
         return -1;
     }
-
-
-
-
-
     private void showUserNotExistDialog(String username, String password) {
         int option = JOptionPane.showConfirmDialog(null,
                 "El usuario no existe. ¿Deseas registrar una nueva cuenta con los datos proporcionados?\n\nUsuario: " + username + "\nContraseña: " + password,
@@ -158,7 +153,6 @@ public class APPMain {
             registerUser(username, password);
         }
     }
-
     private void registerUser(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
@@ -190,9 +184,6 @@ public class APPMain {
             e.printStackTrace();
         }
     }
-
-
-
     private String login(String username, String password) {
         try {
             // Construir la URL de la petición HTTP GET
@@ -221,7 +212,6 @@ public class APPMain {
 
         return "";
     }
-
     private boolean isAdminUser(String username) {
         try {
             // Construir la URL de la petición HTTP GET
@@ -268,8 +258,6 @@ public class APPMain {
             JOptionPane.showMessageDialog(null, msg);
         }
     }
-
-
     private boolean checkHasFridge(int houseId) {
         try {
             // Build the URL of the HTTP GET request
@@ -307,49 +295,194 @@ public class APPMain {
 
 
 
-    private void openAdminDashboard(int houseId) {
-        mainFrame = new JFrame();
+    private boolean checkHasGarage(int houseId) {
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "https://domotify.net/api/garage/getGarage.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
 
-        // Configurar la ventana de administrador
-        mainFrame.dispose();
+            URL url = new URL(urlString);
 
-        JFrame adminFrame = new JFrame("Panel de Administrador");
-        adminFrame.setBounds(100, 100, 400, 300);
-        adminFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        adminFrame.getContentPane().setLayout(new FlowLayout());
-        adminFrame.setLocationRelativeTo(null);
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
 
-        JLabel lblAdmin = new JLabel("¡Bienvenido, Administrador!");
-        adminFrame.getContentPane().add(lblAdmin);
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
 
-        boolean hasFridge = checkHasFridge(houseId);
-        if (hasFridge) {
-            JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
-            manageFridgeButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    // Llama a la función para gestionar el frigorífico
-                    manageFridge(houseId);
-                }
-            });
-            adminFrame.getContentPane().add(manageFridgeButton);
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            String hasGarage = jsonResponse.getString("hasGarage");
+
+            if (hasGarage.equals("1")) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        adminFrame.setVisible(true);
+        return false;
     }
 
 
+    private boolean checkHasCam(int houseId) {
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "https://domotify.net/api/cam/getCam.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            String hasCam = jsonResponse.getString("hasCam");
+
+            if (hasCam.equals("1")) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+
+
+    private boolean checkHasLed(int houseId) {
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "https://domotify.net/api/led/getLed.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            String hasLed = jsonResponse.getString("hasLed");
+
+            if (hasLed.equals("1")) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+
+
+
+    public void openAdminDashboard(int houseId) {
+
+        // Crear el panel y los botones
+        JPanel panel = new JPanel();
+        JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
+        JButton manageGarageButton = new JButton("Gestionar Garaje");
+        JButton manageLedButton = new JButton("Gestionar Luces LED");
+        JButton manageCamButton = new JButton("Gestionar Cámara");
+
+        // Añadir los botones al panel
+        panel.add(manageFridgeButton);
+        panel.add(manageGarageButton);
+        panel.add(manageLedButton);
+        panel.add(manageCamButton);
+
+        // Agregar comportamiento al clic para cada botón
+        manageFridgeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean hasFridge = checkHasFridge(houseId);
+                if (hasFridge) {
+                    // Código para manejar el frigorífico aquí
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay frigorífico en esta casa.");
+                }
+            }
+        });
+
+        manageGarageButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean hasGarage = checkHasGarage(houseId);
+                if (hasGarage) {
+                    // Código para manejar el garaje aquí
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay garaje en esta casa.");
+                }
+            }
+        });
+
+        manageLedButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean hasLed = checkHasLed(houseId);
+                if (hasLed) {
+                    // Código para manejar las luces LED aquí
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay luces LED en esta casa.");
+                }
+            }
+        });
+
+        manageCamButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean hasCam = checkHasCam(houseId);
+                if (hasCam) {
+                    // Código para manejar la cámara aquí
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay cámara en esta casa.");
+                }
+            }
+        });
+
+        // Crear el marco para la interfaz de usuario
+        JFrame frame = new JFrame("Admin Dashboard");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 400);
+
+        // Agregar el panel al marco
+        frame.add(panel);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
+    }
 
     private void manageFridge(int houseId) {
         // Este es el lugar donde puedes abrir una nueva ventana o panel para gestionar el frigorífico.
         // También puedes llamar a las APIs de PHP desde aquí para gestionar el frigorífico.
         // Esta es sólo una función de marcador de posición. Deberías implementarla según tus necesidades.
     }
-
-
-
-
-
-
     private void openChildDashboard() {
         mainFrame = new JFrame();
 
@@ -367,7 +500,6 @@ public class APPMain {
 
         childFrame.setVisible(true);
     }
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
