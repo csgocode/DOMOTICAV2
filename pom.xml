@@ -4,6 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+<<<<<<< HEAD
     <groupId>org.example</groupId>
     <artifactId>DOMOTICAV2</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -11,6 +12,15 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+=======
+    <groupId>app</groupId>
+    <artifactId>Domotica</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>15</maven.compiler.source>
+        <maven.compiler.target>15</maven.compiler.target>
+>>>>>>> kkk
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
