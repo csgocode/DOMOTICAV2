@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-
+//commit
 public class APPMain {
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -16,7 +16,7 @@ public class APPMain {
 
     public APPMain() {
         // Configurar la ventana principal
-        JFrame frame = new JFrame("DOMOTIFY v1.1: Transformando hogares, conectando vidas | Login Area");
+        JFrame frame = new JFrame("Control Domótico");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(createLoginPanel());
         frame.pack();
@@ -59,7 +59,7 @@ public class APPMain {
 
                 if (loginStatus.equals("true")) {
                     // Inicio de sesión exitoso
-                    JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
+                    JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso. Bienvenido.");
 
                     // Verificar el tipo de usuario
                     boolean isAdmin = isAdminUser(username);
@@ -114,7 +114,7 @@ public class APPMain {
 
         if (option == JOptionPane.YES_OPTION) {
             // Redirigir al usuario a la página de registro
-            registerUser(username, password); // hola klk
+            registerUser(username, password);
         }
     }
 
@@ -240,7 +240,7 @@ public class APPMain {
         // Configurar la ventana de niño
         mainFrame.dispose();
 
-        JFrame childFrame = new JFrame("Panel para niños");
+        JFrame childFrame = new JFrame("Panel de Niño");
         childFrame.setBounds(100, 100, 400, 300);
         childFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         childFrame.getContentPane().setLayout(new FlowLayout());
