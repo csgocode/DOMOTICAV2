@@ -28,6 +28,7 @@ public class APPMain {
         frame.setVisible(true);
     }
 
+    //commit prueba
 
     private JPanel createLoginPanel() {
         JPanel loginPanel = new JPanel(new BorderLayout());
