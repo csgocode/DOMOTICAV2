@@ -589,7 +589,7 @@ public class APPMain {
         JPanel panel = new JPanel();
         JSlider garageTempSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
         JLabel garageModeLabel = new JLabel("Modo del garaje:");
-        String[] garageModes = { "Encendido", "Apagado", "Custom" };
+        String[] garageModes = { "Abierto", "Cerrado", "Custom" };
         JComboBox<String> garageModeComboBox = new JComboBox<>(garageModes);
         JButton saveButton = new JButton("Guardar cambios");
 
@@ -614,7 +614,7 @@ public class APPMain {
                 String garageMode = (String) garageModeComboBox.getSelectedItem();
 
                 // Construir los datos para enviar
-                String urlParameters = "houseId=" + houseId + "&hasFridge=1" + "&garageTemp=" + garageTemp + "&modeGarage=" + garageMode;
+                String urlParameters = "houseId=" + houseId + "&hasGarage=1" + "&garageTemp=" + garageTemp + "&modeGarage=" + garageMode;
 
                 // Crear conexión y enviar los datos
                 try {
@@ -664,7 +664,7 @@ public class APPMain {
         layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
 
         // Cargar imagen de fondo
-        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/garage.png");
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/garaje.png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
         backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
 
