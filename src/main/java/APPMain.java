@@ -586,18 +586,22 @@ public class APPMain {
 
         // Crear el panel y los componentes
         JPanel panel = new JPanel();
-        JLabel garageTempLabel = new JLabel("Temporizador del garaje");
-        JTextField garageTempTextField = new JTextField(10);
+        JSlider garageTempSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
         JLabel garageModeLabel = new JLabel("Modo del garaje:");
         String[] garageModes = { "Encendido", "Apagado", "Custom" };
         JComboBox<String> garageModeComboBox = new JComboBox<>(garageModes);
         JButton saveButton = new JButton("Guardar cambios");
 
 
+        //config-slider
+        garageTempSlider.setMajorTickSpacing(20);  // configurar los intervalos de las marcas grandes
+        garageTempSlider.setMinorTickSpacing(5);   // configurar los intervalos de las marcas pequeñas
+        garageTempSlider.setPaintTicks(true);      // pintar las marcas
+        garageTempSlider.setPaintLabels(true);     // pintar las etiquetas de los valores
+
 
         // Añadir los componentes al panel
-        panel.add(garageTempLabel);
-        panel.add(garageTempTextField);
+        panel.add(garageTempSlider);
         panel.add(garageModeLabel);
         panel.add(garageModeComboBox);
         panel.add(saveButton);
@@ -605,7 +609,7 @@ public class APPMain {
         // Agregar comportamiento al clic del botón de guardar
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String garageTemp = garageTempTextField.getText();
+                int garageTemp = garageTempSlider.getValue();
                 String garageMode = (String) garageModeComboBox.getSelectedItem();
 
                 // Construir los datos para enviar
@@ -678,7 +682,6 @@ public class APPMain {
         // Mostrar la interfaz de usuario
         frame.setVisible(true);
     }
-
 
     private void openChildDashboard() {
         mainFrame = new JFrame();
