@@ -402,10 +402,6 @@ public class APPMain {
 
         return false;
     }
-
-
-
-
     public void openAdminDashboard(int houseId) {
 
         // Crear el panel y los botones
@@ -432,7 +428,7 @@ public class APPMain {
             public void actionPerformed(ActionEvent e) {
                 boolean hasGarage = checkHasGarage(houseId);
                 if (hasGarage) {
-                    // Código para manejar el garaje aquí
+                   manageGarage(houseId);
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay garaje en esta casa.");
                 }
@@ -462,7 +458,7 @@ public class APPMain {
         });
 
         // Crear el marco para la interfaz de usuario
-        JFrame frame = new JFrame("Admin Dashboard");
+        JFrame frame = new JFrame("Panel de Administracion | Domotify v1.2");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 400);
 
@@ -490,6 +486,8 @@ public class APPMain {
         String[] fridgeModes = { "Eco", "Normal", "Boost" };
         JComboBox<String> fridgeModeComboBox = new JComboBox<>(fridgeModes);
         JButton saveButton = new JButton("Guardar cambios");
+
+
 
         // Añadir los componentes al panel
         panel.add(fridgeNameLabel);
@@ -559,6 +557,109 @@ public class APPMain {
 
         // Cargar imagen de fondo
         ImageIcon backgroundImage = new ImageIcon("src/main/java/img/nevera.png");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+
+        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
+
+        // Ajustar el tamaño y la posición del panel
+        panel.setBounds(50, 50, 230, 160);  // Puedes ajustar estos valores según sea necesario
+
+        // Añadir el panel al JLayeredPane en un nivel superior
+        layeredPane.add(panel, Integer.valueOf(1));
+
+        // Añadir el JLayeredPane al JFrame
+        frame.add(layeredPane);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
+    }
+
+
+    private void manageGarage(int houseId) {
+        boolean hasGarage = checkHasGarage(houseId);
+        if (!hasGarage) {
+            JOptionPane.showMessageDialog(null, "No hay garage en esta casa.");
+            return;
+        }
+
+        // Crear el panel y los componentes
+        JPanel panel = new JPanel();
+        JLabel garageTempLabel = new JLabel("Temporizador del garaje");
+        JTextField garageTempTextField = new JTextField(10);
+        JLabel garageModeLabel = new JLabel("Modo del garaje:");
+        String[] garageModes = { "Encendido", "Apagado", "Custom" };
+        JComboBox<String> garageModeComboBox = new JComboBox<>(garageModes);
+        JButton saveButton = new JButton("Guardar cambios");
+
+
+
+        // Añadir los componentes al panel
+        panel.add(garageTempLabel);
+        panel.add(garageTempTextField);
+        panel.add(garageModeLabel);
+        panel.add(garageModeComboBox);
+        panel.add(saveButton);
+
+        // Agregar comportamiento al clic del botón de guardar
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String garageTemp = garageTempTextField.getText();
+                String garageMode = (String) garageModeComboBox.getSelectedItem();
+
+                // Construir los datos para enviar
+                String urlParameters = "houseId=" + houseId + "&hasFridge=1" + "&garageTemp=" + garageTemp + "&modeGarage=" + garageMode;
+
+                // Crear conexión y enviar los datos
+                try {
+                    URL url = new URL("https://domotify.net/api/garage/updateGarage.php");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(urlParameters);
+                    wr.flush();
+                    wr.close();
+
+                    // Leer respuesta del servidor
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+
+                    // Cerrar conexiones
+                    in.close();
+                    connection.disconnect();
+
+                    // Manejar respuesta
+                    String response = content.toString();
+                    if (response.equals("success")) {
+                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // Crear el marco para la interfaz de usuario
+        // Crear el marco para la interfaz de usuario
+        JFrame frame = new JFrame("Gestión de Garaje");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
+        frame.setSize(675, 675);
+
+        // Crear un JLayeredPane para permitir la superposición de componentes
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+
+        // Cargar imagen de fondo
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/garage.png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
         backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
 
