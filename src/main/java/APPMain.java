@@ -250,7 +250,7 @@ public class APPMain {
 
         if (ownerHouse != -1) {
             if (isAdmin) {
-                openAdminDashboard(ownerHouse);
+                openAdminDashboard(ownerHouse, username);
             } else {
                 openChildDashboard();
             }
@@ -403,10 +403,12 @@ public class APPMain {
 
         return false;
     }
-    public void openAdminDashboard(int houseId) {
+    public void openAdminDashboard(int houseId, String username) {
+
 
         // Crear el panel y los botones
-        JPanel panel = new JPanel(new GridLayout(2, 3));  // Nuevo LayoutManager
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new GridLayout(3, 3));  // Nuevo LayoutManager
 
         // ICONOS
         ImageIcon fridgeIcon = new ImageIcon("src/main/java/img/fridgeIcon.png");
@@ -415,6 +417,10 @@ public class APPMain {
         ImageIcon camIcon = new ImageIcon("src/main/java/img/camIcon.png");
         ImageIcon manageHotIcon = new ImageIcon("src/main/java/img/hotIcon.png");
         ImageIcon manageBZZIcon = new ImageIcon("src/main/java/img/BZZIcon.png");
+        //3mas
+        ImageIcon manageRoombaIcon = new ImageIcon("src/main/java/img/RoombaIcon.png");
+        ImageIcon manageAltavocesIcon = new ImageIcon("src/main/java/img/AltavocesIcon.png");
+        ImageIcon manageCocinaIcon = new ImageIcon("src/main/java/img/CocinaIcon.png");
 
         JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
         manageFridgeButton.setIcon(fridgeIcon);  // Añadir ícono al botón
@@ -434,6 +440,15 @@ public class APPMain {
         JButton manageBZZ = new JButton("Gestionar Anti-Mosquitos");
         manageBZZ.setIcon(manageBZZIcon);  // Añadir ícono al botón
 
+        JButton manageRoomba = new JButton("Gestionar Roomba");
+        manageRoomba.setIcon(manageRoombaIcon);  // Añadir ícono al botón
+
+        JButton manageAltavoces = new JButton("Gestionar Altavoces");
+        manageAltavoces.setIcon(manageAltavocesIcon);  // Añadir ícono al botón
+
+        JButton manageCocina = new JButton("Gestionar Comida");
+        manageCocina.setIcon(manageCocinaIcon);  // Añadir ícono al botón
+
         // Añadir los botones al panel
         panel.add(manageFridgeButton);
         panel.add(manageGarageButton);
@@ -441,6 +456,9 @@ public class APPMain {
         panel.add(manageCamButton);
         panel.add(manageHot);
         panel.add(manageBZZ);
+        panel.add(manageRoomba);
+        panel.add(manageAltavoces);
+        panel.add(manageCocina);
 
         // Agregar comportamiento al clic para cada botón
         manageFridgeButton.addActionListener(new ActionListener() {
@@ -487,13 +505,50 @@ public class APPMain {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 350);  // Modificar tamaño de ventana para acomodar 3 botones por fila
 
+        // Crear RainbowLabel (reemplazar JLabel)
+        RainbowLabel welcomeLabel = new RainbowLabel("¡Bienvenido al panel de control " + username + ", esperemos que disfrutes de tus productos Domotify!", SwingConstants.CENTER);
+        welcomeLabel.setOpaque(true);
+        welcomeLabel.setBackground(Color.BLACK);
+        RainbowLabel infoLabel = new RainbowLabel("Puedes comprar nuestros productos en www.domotify.net", SwingConstants.CENTER);
+        infoLabel.setOpaque(true);
+        infoLabel.setBackground(Color.BLACK);
+
+        mainPanel.add(welcomeLabel, BorderLayout.NORTH);
+        mainPanel.add(panel, BorderLayout.CENTER); // Añade el panel de botones al centro
+        mainPanel.add(infoLabel, BorderLayout.SOUTH);
+
         // Agregar el panel al marco
-        frame.add(panel);
+        frame.add(mainPanel);
 
         frame.setLocationRelativeTo(null);
 
-// Mostrar la interfaz de usuario
+        // Mostrar la interfaz de usuario
         frame.setVisible(true);
+    }
+
+    // Clase personalizada RainbowLabel
+    class RainbowLabel extends JLabel {
+        private float hue = 0.0f;
+
+        public RainbowLabel(String text, int alignment) {
+            super(text, alignment);
+
+            // Crear un Timer que cambie el color del texto cada 100 milisegundos
+            new Timer(100, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Convertir el valor de hue a un color RGB
+                    Color color = Color.getHSBColor(hue, 1.0f, 1.0f);
+                    // Actualizar el color del texto
+                    setForeground(color);
+                    // Avanzar el valor de hue, volviendo a 0 cuando alcanza 1
+                    hue += 0.01f;
+                    if (hue >= 1.0f) {
+                        hue = 0.0f;
+                    }
+                }
+            }).start();
+        }
     }
 
     private void manageFridge(int houseId) {
