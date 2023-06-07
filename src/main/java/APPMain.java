@@ -406,17 +406,41 @@ public class APPMain {
     public void openAdminDashboard(int houseId) {
 
         // Crear el panel y los botones
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new GridLayout(2, 3));  // Nuevo LayoutManager
+
+        // ICONOS
+        ImageIcon fridgeIcon = new ImageIcon("src/main/java/img/fridgeIcon.png");
+        ImageIcon garageIcon = new ImageIcon("src/main/java/img/garageIcon.png");
+        ImageIcon ledIcon = new ImageIcon("src/main/java/img/ledIcon.png");
+        ImageIcon camIcon = new ImageIcon("src/main/java/img/camIcon.png");
+        ImageIcon manageHotIcon = new ImageIcon("src/main/java/img/hotIcon.png");
+        ImageIcon manageBZZIcon = new ImageIcon("src/main/java/img/BZZIcon.png");
+
         JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
+        manageFridgeButton.setIcon(fridgeIcon);  // Añadir ícono al botón
+
         JButton manageGarageButton = new JButton("Gestionar Garaje");
+        manageGarageButton.setIcon(garageIcon);  // Añadir ícono al botón
+
         JButton manageLedButton = new JButton("Gestionar Luces LED");
-        JButton manageCamButton = new JButton("Gestionar Cámara");
+        manageLedButton.setIcon(ledIcon);  // Añadir ícono al botón
+
+        JButton manageCamButton = new JButton("Gestionar Seguridad");
+        manageCamButton.setIcon(camIcon);  // Añadir ícono al botón
+
+        JButton manageHot = new JButton("Gestionar Temperatura");
+        manageHot.setIcon(manageHotIcon);  // Añadir ícono al botón
+
+        JButton manageBZZ = new JButton("Gestionar Anti-Mosquitos");
+        manageBZZ.setIcon(manageBZZIcon);  // Añadir ícono al botón
 
         // Añadir los botones al panel
         panel.add(manageFridgeButton);
         panel.add(manageGarageButton);
         panel.add(manageLedButton);
         panel.add(manageCamButton);
+        panel.add(manageHot);
+        panel.add(manageBZZ);
 
         // Agregar comportamiento al clic para cada botón
         manageFridgeButton.addActionListener(new ActionListener() {
@@ -461,12 +485,14 @@ public class APPMain {
         // Crear el marco para la interfaz de usuario
         JFrame frame = new JFrame("Panel de Administracion | Domotify v1.2");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 400);
+        frame.setSize(1000, 350);  // Modificar tamaño de ventana para acomodar 3 botones por fila
 
         // Agregar el panel al marco
         frame.add(panel);
 
-        // Mostrar la interfaz de usuario
+        frame.setLocationRelativeTo(null);
+
+// Mostrar la interfaz de usuario
         frame.setVisible(true);
     }
 
@@ -572,6 +598,8 @@ public class APPMain {
 
         // Añadir el JLayeredPane al JFrame
         frame.add(layeredPane);
+
+        frame.setLocationRelativeTo(null);
 
         // Mostrar la interfaz de usuario
         frame.setVisible(true);
@@ -679,6 +707,8 @@ public class APPMain {
 
         // Añadir el JLayeredPane al JFrame
         frame.add(layeredPane);
+
+        frame.setLocationRelativeTo(null);
 
         // Mostrar la interfaz de usuario
         frame.setVisible(true);
