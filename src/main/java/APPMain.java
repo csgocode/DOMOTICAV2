@@ -259,6 +259,8 @@ public class APPMain {
             JOptionPane.showMessageDialog(null, msg);
         }
     }
+
+    // CHECKEOS DE BASES DE DATOS POR PHP
     private boolean checkHasFridge(int houseId) {
         try {
             // Build the URL of the HTTP GET request
@@ -294,6 +296,74 @@ public class APPMain {
         return false;
     }
 
+    private boolean checkHasTemp(int houseId) {
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "https://domotify.net/api/temperatura/getTemp.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            String hasFridge = jsonResponse.getString("hasTemp");
+
+            if (hasFridge.equals("1")) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    private int checkTempActual(int houseId) {
+        int tempActual = 0;
+
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "https://domotify.net/api/temperatura/getTemp.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            tempActual = jsonResponse.getInt("tempActual");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return tempActual;
+    }
 
 
     private boolean checkHasGarage(int houseId) {
@@ -330,8 +400,6 @@ public class APPMain {
 
         return false;
     }
-
-
     private boolean checkHasCam(int houseId) {
         try {
             // Build the URL of the HTTP GET request
@@ -366,9 +434,6 @@ public class APPMain {
 
         return false;
     }
-
-
-
     private boolean checkHasLed(int houseId) {
         try {
             // Build the URL of the HTTP GET request
@@ -418,9 +483,9 @@ public class APPMain {
         ImageIcon manageHotIcon = new ImageIcon("src/main/java/img/hotIcon.png");
         ImageIcon manageBZZIcon = new ImageIcon("src/main/java/img/BZZIcon.png");
         //3mas
-        ImageIcon manageRoombaIcon = new ImageIcon("src/main/java/img/RoombaIcon.png");
-        ImageIcon manageAltavocesIcon = new ImageIcon("src/main/java/img/AltavocesIcon.png");
-        ImageIcon manageCocinaIcon = new ImageIcon("src/main/java/img/CocinaIcon.png");
+        ImageIcon manageRoombaIcon = new ImageIcon("src/main/java/img/roombaIcon.png");
+        ImageIcon manageAltavocesIcon = new ImageIcon("src/main/java/img/altavocesIcon.png");
+        ImageIcon manageCocinaIcon = new ImageIcon("src/main/java/img/cocinaIcon.png");
 
         JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
         manageFridgeButton.setIcon(fridgeIcon);  // Añadir ícono al botón
@@ -500,6 +565,18 @@ public class APPMain {
             }
         });
 
+        manageHot.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean hasTemp = checkHasTemp(houseId);
+                int tempActual = checkTempActual(houseId);
+                if (hasTemp) {
+                    manageTemperature(houseId, String.valueOf(tempActual));
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay sistema de temperatura configurado en esta casa.");
+                }
+            }
+        });
+
         // Crear el marco para la interfaz de usuario
         JFrame frame = new JFrame("Panel de Administracion | Domotify v1.2");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -560,11 +637,21 @@ public class APPMain {
 
         // Crear el panel y los componentes
         JPanel panel = new JPanel();
+        panel.setOpaque(false);
         JLabel fridgeNameLabel = new JLabel("Nombre del frigorífico:");
+        fridgeNameLabel.setOpaque(true);
+        fridgeNameLabel.setBackground(Color.BLACK);
+        fridgeNameLabel.setForeground(Color.WHITE);
         JTextField fridgeNameTextField = new JTextField(10);
         JLabel fridgeTempLabel = new JLabel("Temperatura del frigorífico:");
+        fridgeTempLabel.setOpaque(true);
+        fridgeTempLabel.setForeground(Color.WHITE);
+        fridgeTempLabel.setBackground(Color.BLACK);
         JTextField fridgeTempTextField = new JTextField(10);
         JLabel fridgeModeLabel = new JLabel("Modo del frigorífico:");
+        fridgeModeLabel.setOpaque(true);
+        fridgeModeLabel.setForeground(Color.WHITE);
+        fridgeModeLabel.setBackground(Color.BLACK);
         String[] fridgeModes = { "Eco", "Normal", "Boost" };
         JComboBox<String> fridgeModeComboBox = new JComboBox<>(fridgeModes);
         JButton saveButton = new JButton("Guardar cambios");
@@ -639,6 +726,229 @@ public class APPMain {
 
         // Cargar imagen de fondo
         ImageIcon backgroundImage = new ImageIcon("src/main/java/img/nevera.png");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+
+        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
+
+        // Ajustar el tamaño y la posición del panel
+        panel.setBounds(100, 100, 230, 160);  // Puedes ajustar estos valores según sea necesario
+
+        // Añadir el panel al JLayeredPane en un nivel superior
+        layeredPane.add(panel, Integer.valueOf(1));
+
+        // Añadir el JLayeredPane al JFrame
+        frame.add(layeredPane);
+
+        frame.setLocationRelativeTo(null);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
+    }
+
+    private void manageTemperature(int houseId, String tempActual) {
+        // Crear el panel y los componentes
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+        JLabel tempActualLabel = new JLabel("Temperatura Actual:");
+        JTextField tempActualTextField = new JTextField(tempActual, 10);
+        JLabel modeTempLabel = new JLabel("Modo de temperatura:");
+
+        tempActualLabel.setForeground(Color.WHITE);
+        tempActualLabel.setOpaque(true);
+        tempActualLabel.setBackground(Color.BLACK);
+
+
+        modeTempLabel.setForeground(Color.WHITE);
+        modeTempLabel.setOpaque(true);
+        modeTempLabel.setBackground(Color.BLACK);
+
+        String[] modeTemps = { "Apagado", "Low", "Medium", "Boost" };
+        JComboBox<String> modeTempComboBox = new JComboBox<>(modeTemps);
+        JButton saveButton = new JButton("Guardar cambios");
+
+        // Añadir los componentes al panel
+        panel.add(tempActualLabel);
+        panel.add(tempActualTextField);
+        panel.add(modeTempLabel);
+        panel.add(modeTempComboBox);
+        panel.add(saveButton);
+
+
+
+        // Crear el marco para la interfaz de usuario
+        final JFrame frame = new JFrame("Gestión de temperatura");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
+        frame.setSize(675, 675);
+
+        // Crear un JLayeredPane para permitir la superposición de componentes
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+
+        // Cargar imagen de fondo
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/temperatura" + tempActual + ".png");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+
+        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
+
+        // Ajustar el tamaño y la posición del panel
+        panel.setBounds(94, 140, 200, 130);  // Puedes ajustar estos valores según sea necesario
+
+        // Añadir el panel al JLayeredPane en un nivel superior
+        layeredPane.add(panel, Integer.valueOf(1));
+
+        // Añadir el JLayeredPane al JFrame
+        frame.add(layeredPane);
+
+        frame.setLocationRelativeTo(null);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
+
+        // Agregar comportamiento al clic del botón de guardar
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String newTempActual = tempActualTextField.getText();
+                String modeTemp = (String) modeTempComboBox.getSelectedItem();
+
+                // Construir los datos para enviar
+                String urlParameters = "houseId=" + houseId + "&hasTemp=1" + "&tempActual=" + newTempActual + "&modeTemp=" + modeTemp;
+
+                // Crear conexión y enviar los datos
+                try {
+                    URL url = new URL("https://domotify.net/api/temperatura/updateTemp.php");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(urlParameters);
+                    wr.flush();
+                    wr.close();
+
+                    // Leer respuesta del servidor
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+
+                    // Cerrar conexiones
+                    in.close();
+                    connection.disconnect();
+
+                    // Manejar respuesta
+                    String response = content.toString();
+                    if (response.equals("success")) {
+                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
+                    }
+
+                    frame.dispose();
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+
+
+    // FALTA POR ACABAR !!
+    private void manageMosquitos(int houseId) {
+        boolean hasGarage = checkHasGarage(houseId);
+        if (!hasGarage) {
+            JOptionPane.showMessageDialog(null, "No hay garage en esta casa.");
+            return;
+        }
+
+        // Crear el panel y los componentes
+        JPanel panel = new JPanel();
+        JSlider garageTempSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
+        JLabel garageModeLabel = new JLabel("Modo del garaje:");
+        String[] garageModes = { "Abierto", "Cerrado", "Custom" };
+        JComboBox<String> garageModeComboBox = new JComboBox<>(garageModes);
+        JButton saveButton = new JButton("Guardar cambios");
+
+
+        //config-slider
+        garageTempSlider.setMajorTickSpacing(20);  // configurar los intervalos de las marcas grandes
+        garageTempSlider.setMinorTickSpacing(5);   // configurar los intervalos de las marcas pequeñas
+        garageTempSlider.setPaintTicks(true);      // pintar las marcas
+        garageTempSlider.setPaintLabels(true);     // pintar las etiquetas de los valores
+
+
+        // Añadir los componentes al panel
+        panel.add(garageTempSlider);
+        panel.add(garageModeLabel);
+        panel.add(garageModeComboBox);
+        panel.add(saveButton);
+
+        // Agregar comportamiento al clic del botón de guardar
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int garageTemp = garageTempSlider.getValue();
+                String garageMode = (String) garageModeComboBox.getSelectedItem();
+
+                // Construir los datos para enviar
+                String urlParameters = "houseId=" + houseId + "&hasGarage=1" + "&garageTemp=" + garageTemp + "&modeGarage=" + garageMode;
+
+                // Crear conexión y enviar los datos
+                try {
+                    URL url = new URL("https://domotify.net/api/garage/updateGarage.php");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(urlParameters);
+                    wr.flush();
+                    wr.close();
+
+                    // Leer respuesta del servidor
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+
+                    // Cerrar conexiones
+                    in.close();
+                    connection.disconnect();
+
+                    // Manejar respuesta
+                    String response = content.toString();
+                    if (response.equals("success")) {
+                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // Crear el marco para la interfaz de usuario
+        // Crear el marco para la interfaz de usuario
+        JFrame frame = new JFrame("Gestión de Garaje");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
+        frame.setSize(675, 675);
+
+        // Crear un JLayeredPane para permitir la superposición de componentes
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+
+        // Cargar imagen de fondo
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/garaje.png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
         backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
 
