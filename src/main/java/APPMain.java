@@ -865,7 +865,7 @@ public class APPMain {
     private void manageMosquitos(int houseId) {
         boolean hasGarage = checkHasGarage(houseId);
         if (!hasGarage) {
-            JOptionPane.showMessageDialog(null, "No hay garage en esta casa.");
+            JOptionPane.showMessageDialog(null, "No hay sistema Anti-Mosquito en esta casa.");
             return;
         }
 
