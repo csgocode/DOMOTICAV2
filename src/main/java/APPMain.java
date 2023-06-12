@@ -8,6 +8,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import org.json.JSONObject;
+import com.twilio.Twilio;
+import com.twilio.rest.api.v2010.account.Call;
+import com.twilio.type.PhoneNumber;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+
 
 
 //commit
@@ -485,7 +493,7 @@ public class APPMain {
         //3mas
         ImageIcon manageRoombaIcon = new ImageIcon("src/main/java/img/roombaIcon.png");
         ImageIcon manageAltavocesIcon = new ImageIcon("src/main/java/img/altavocesIcon.png");
-        ImageIcon manageCocinaIcon = new ImageIcon("src/main/java/img/cocinaIcon.png");
+        ImageIcon manageCocinaIcon = new ImageIcon("src/main/java/img/soporte.png");
 
         JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
         manageFridgeButton.setIcon(fridgeIcon);  // Añadir ícono al botón
@@ -511,7 +519,7 @@ public class APPMain {
         JButton manageAltavoces = new JButton("Gestionar Altavoces");
         manageAltavoces.setIcon(manageAltavocesIcon);  // Añadir ícono al botón
 
-        JButton manageCocina = new JButton("Gestionar Comida");
+        JButton manageCocina = new JButton("Soporte Tecnico");
         manageCocina.setIcon(manageCocinaIcon);  // Añadir ícono al botón
 
         // Añadir los botones al panel
@@ -562,6 +570,12 @@ public class APPMain {
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay cámara en esta casa.");
                 }
+            }
+        });
+
+        manageCocina.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                manageSoporte(1);
             }
         });
 
@@ -862,114 +876,32 @@ public class APPMain {
 
 
     // FALTA POR ACABAR !!
-    private void manageMosquitos(int houseId) {
-        boolean hasGarage = checkHasGarage(houseId);
-        if (!hasGarage) {
-            JOptionPane.showMessageDialog(null, "No hay sistema Anti-Mosquito en esta casa.");
+    private void manageSoporte(int houseId) {
+        // Tus credenciales de Twilio
+        String ACCOUNT_SID = "AC63c304752e5544506eccd93aef2be099";
+        String AUTH_TOKEN = "0608715f5ee95120a5e6ddefe2bb45f7";
+
+        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+
+
+        String phoneNumber = JOptionPane.showInputDialog("Por favor, introduce el número de teléfono con el simbolo + y el prefijo del pais. Ejemplo: +34698905854");
+
+        PhoneNumber to = new PhoneNumber(phoneNumber);
+        PhoneNumber from = new PhoneNumber("+34611703775");
+        URI uri = null;
+
+        try {
+            uri = new URI("http://74.208.82.130:8888/voice");
+        } catch (URISyntaxException e) {
+            System.err.println("Invalid URI");
+            e.printStackTrace();
             return;
         }
 
-        // Crear el panel y los componentes
-        JPanel panel = new JPanel();
-        JSlider garageTempSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
-        JLabel garageModeLabel = new JLabel("Modo del garaje:");
-        String[] garageModes = { "Abierto", "Cerrado", "Custom" };
-        JComboBox<String> garageModeComboBox = new JComboBox<>(garageModes);
-        JButton saveButton = new JButton("Guardar cambios");
+        Call call = Call.creator(to, from, uri).create();
 
-
-        //config-slider
-        garageTempSlider.setMajorTickSpacing(20);  // configurar los intervalos de las marcas grandes
-        garageTempSlider.setMinorTickSpacing(5);   // configurar los intervalos de las marcas pequeñas
-        garageTempSlider.setPaintTicks(true);      // pintar las marcas
-        garageTempSlider.setPaintLabels(true);     // pintar las etiquetas de los valores
-
-
-        // Añadir los componentes al panel
-        panel.add(garageTempSlider);
-        panel.add(garageModeLabel);
-        panel.add(garageModeComboBox);
-        panel.add(saveButton);
-
-        // Agregar comportamiento al clic del botón de guardar
-        saveButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int garageTemp = garageTempSlider.getValue();
-                String garageMode = (String) garageModeComboBox.getSelectedItem();
-
-                // Construir los datos para enviar
-                String urlParameters = "houseId=" + houseId + "&hasGarage=1" + "&garageTemp=" + garageTemp + "&modeGarage=" + garageMode;
-
-                // Crear conexión y enviar los datos
-                try {
-                    URL url = new URL("https://domotify.net/api/garage/updateGarage.php");
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("POST");
-                    connection.setDoOutput(true);
-
-                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-                    wr.writeBytes(urlParameters);
-                    wr.flush();
-                    wr.close();
-
-                    // Leer respuesta del servidor
-                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String inputLine;
-                    StringBuilder content = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null) {
-                        content.append(inputLine);
-                    }
-
-                    // Cerrar conexiones
-                    in.close();
-                    connection.disconnect();
-
-                    // Manejar respuesta
-                    String response = content.toString();
-                    if (response.equals("success")) {
-                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-
-        // Crear el marco para la interfaz de usuario
-        // Crear el marco para la interfaz de usuario
-        JFrame frame = new JFrame("Gestión de Garaje");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
-        frame.setSize(675, 675);
-
-        // Crear un JLayeredPane para permitir la superposición de componentes
-        JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
-
-        // Cargar imagen de fondo
-        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/garaje.png");
-        JLabel backgroundLabel = new JLabel(backgroundImage);
-        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
-
-        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
-        layeredPane.add(backgroundLabel, Integer.valueOf(0));
-
-        // Ajustar el tamaño y la posición del panel
-        panel.setBounds(50, 50, 230, 160);  // Puedes ajustar estos valores según sea necesario
-
-        // Añadir el panel al JLayeredPane en un nivel superior
-        layeredPane.add(panel, Integer.valueOf(1));
-
-        // Añadir el JLayeredPane al JFrame
-        frame.add(layeredPane);
-
-        frame.setLocationRelativeTo(null);
-
-        // Mostrar la interfaz de usuario
-        frame.setVisible(true);
+        System.out.println(call.getSid());
     }
-
 
     private void manageGarage(int houseId) {
         boolean hasGarage = checkHasGarage(houseId);
