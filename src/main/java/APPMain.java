@@ -15,6 +15,8 @@ import com.twilio.type.PhoneNumber;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+// GIT profe: al361883
+
 
 
 
@@ -540,6 +542,12 @@ public class APPMain {
             }
         });
 
+        manageLedButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                manageLed(houseId);
+            }
+        });
+
         manageGarageButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean hasGarage = checkHasGarage(houseId);
@@ -641,6 +649,148 @@ public class APPMain {
             }).start();
         }
     }
+
+    private void manageLed(int houseId) {
+        boolean hasLed = checkHasLed(houseId);
+        if (!hasLed) {
+            JOptionPane.showMessageDialog(null, "No hay luces LED en esta casa.");
+            return;
+        }
+
+        // Crear el panel y los componentes
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+
+        JLabel ledNameLabel = new JLabel("Nombre del frigorífico:");
+        ledNameLabel.setOpaque(true);
+        ledNameLabel.setBackground(Color.BLACK);
+        ledNameLabel.setForeground(Color.WHITE);
+        JTextField ledNameTextField = new JTextField(10);
+
+        JLabel ledRLabel = new JLabel("Nombre del frigorífico:");
+        ledRLabel.setOpaque(true);
+        ledRLabel.setBackground(Color.BLACK);
+        ledRLabel.setForeground(Color.WHITE);
+        JTextField ledRTextField = new JTextField(10);
+
+        JLabel ledGLabel = new JLabel("Nombre del frigorífico:");
+        ledGLabel.setOpaque(true);
+        ledGLabel.setBackground(Color.BLACK);
+        ledGLabel.setForeground(Color.WHITE);
+        JTextField ledGTextField = new JTextField(10);
+
+        JLabel ledBLabel = new JLabel("Nombre del frigorífico:");
+        ledBLabel.setOpaque(true);
+        ledBLabel.setBackground(Color.BLACK);
+        ledBLabel.setForeground(Color.WHITE);
+        JTextField ledBTextField = new JTextField(10);
+
+        JLabel ledModeLabel = new JLabel("Nombre del frigorífico:");
+        ledModeLabel.setOpaque(true);
+        ledModeLabel.setBackground(Color.BLACK);
+        ledModeLabel.setForeground(Color.WHITE);
+        JTextField ledModeTextField = new JTextField(10);
+        JButton saveButton = new JButton("Guardar cambios");
+
+
+
+        // Añadir los componentes al panel
+        panel.add(ledNameLabel);
+        panel.add(ledNameTextField);
+        panel.add(ledRLabel);
+        panel.add(ledRTextField);
+        panel.add(ledGLabel);
+        panel.add(ledGTextField);
+        panel.add(ledBLabel);
+        panel.add(ledBTextField);
+        panel.add(ledModeLabel);
+        panel.add(ledModeTextField);
+        panel.add(saveButton);
+
+        // Agregar comportamiento al clic del botón de guardar
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String ledName = ledNameTextField.getText();
+                String ledR = ledRTextField.getText();
+                String ledG = ledGTextField.getText();
+                String ledB = ledBTextField.getText();
+                String ledMode = ledModeTextField.getText();
+
+
+
+                // Construir los datos para enviar
+                String urlParameters = "houseId=" + houseId + "&hasLed=1" + "&ledName=" + ledName + "&ledR=" + ledR + "&ledG=" + ledG + "&ledB=" + ledB + "&ledMode=" + ledMode;
+
+                // Crear conexión y enviar los datos
+                try {
+                    URL url = new URL("https://domotify.net/api/led/updateLed.php");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(urlParameters);
+                    wr.flush();
+                    wr.close();
+
+                    // Leer respuesta del servidor
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+
+                    // Cerrar conexiones
+                    in.close();
+                    connection.disconnect();
+
+                    // Manejar respuesta
+                    String response = content.toString();
+                    if (response.equals("success")) {
+                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // Crear el marco para la interfaz de usuario
+        // Crear el marco para la interfaz de usuario
+        JFrame frame = new JFrame("Gestión de LEDS");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
+        frame.setSize(675, 675);
+
+        // Crear un JLayeredPane para permitir la superposición de componentes
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+
+        // Cargar imagen de fondo
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/leds.png");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+
+        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
+
+        // Ajustar el tamaño y la posición del panel
+        panel.setBounds(100, 100, 230, 160);  // Puedes ajustar estos valores según sea necesario
+
+        // Añadir el panel al JLayeredPane en un nivel superior
+        layeredPane.add(panel, Integer.valueOf(1));
+
+        // Añadir el JLayeredPane al JFrame
+        frame.add(layeredPane);
+
+        frame.setLocationRelativeTo(null);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
+    }
+
 
     private void manageFridge(int houseId) {
         boolean hasFridge = checkHasFridge(houseId);
@@ -878,8 +1028,8 @@ public class APPMain {
     // FALTA POR ACABAR !!
     private void manageSoporte(int houseId) {
         // Tus credenciales de Twilio
-        String ACCOUNT_SID = "AC63c304752e5544506eccd93aef2be099";
-        String AUTH_TOKEN = "0608715f5ee95120a5e6ddefe2bb45f7";
+        String ACCOUNT_SID = "";
+        String AUTH_TOKEN = "";
 
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
