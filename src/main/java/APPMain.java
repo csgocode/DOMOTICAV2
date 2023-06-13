@@ -306,6 +306,77 @@ public class APPMain {
         return false;
     }
 
+
+    private boolean checkHasSpoti(int houseId) {
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "https://domotify.net/api/spoti/getSpoti.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            String hasSpoti = jsonResponse.getString("hasSpoti");
+
+            if (hasSpoti.equals("1")) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    private boolean checkHasMosquitos(int houseId) {
+        try {
+            // Build the URL of the HTTP GET request
+            String urlString = "https://domotify.net/api/mosquitos/getMosquitos.php";
+            String query = String.format("houseId=%d", houseId);
+            urlString += "?" + query;
+
+            URL url = new URL(urlString);
+
+            // Set up the HTTP connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the server's response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String response = reader.readLine();
+
+            // Close the connection and reader
+            reader.close();
+            connection.disconnect();
+
+            // Parse the server's response
+            JSONObject jsonResponse = new JSONObject(response);
+            String hasFridge = jsonResponse.getString("hasMosquitos");
+
+            if (hasFridge.equals("1")) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     private boolean checkHasTemp(int houseId) {
         try {
             // Build the URL of the HTTP GET request
@@ -1037,7 +1108,7 @@ public class APPMain {
         String phoneNumber = JOptionPane.showInputDialog("Por favor, introduce el número de teléfono con el simbolo + y el prefijo del pais. Ejemplo: +34698905854");
 
         PhoneNumber to = new PhoneNumber(phoneNumber);
-        PhoneNumber from = new PhoneNumber("+34611703775");
+        PhoneNumber from = new PhoneNumber("+34964800212");
         URI uri = null;
 
         try {
@@ -1161,6 +1232,8 @@ public class APPMain {
         frame.setVisible(true);
     }
 
+
+    //ESTO SERIA PARA NIÑOS PERO NO DA TIEMPO A ACABARLO - EN FASE DE DESARROLLO..
     private void openChildDashboard() {
         mainFrame = new JFrame();
 
