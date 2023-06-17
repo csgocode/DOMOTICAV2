@@ -7,6 +7,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Call;
@@ -14,6 +16,15 @@ import com.twilio.type.PhoneNumber;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+//IMPORTS PARA SPOTIFY
+import com.wrapper.spotify.SpotifyApi;
+import com.wrapper.spotify.exceptions.SpotifyWebApiException;
+import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
+import com.wrapper.spotify.model_objects.specification.Track;
+import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
+import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
+
 
 // GIT profe: al361883
 
@@ -53,7 +64,7 @@ public class APPMain {
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
 
-        JLabel usernameLabel = new JLabel("USUARIO O CORREO DE DOMOTIFY");
+        JLabel usernameLabel = new JLabel("USUARIO DE DOMOTIFY");
         usernameField = new JTextField();
         usernameField.setMaximumSize(new Dimension(200, usernameField.getPreferredSize().height));
         usernameField.setColumns(12);
@@ -346,7 +357,7 @@ public class APPMain {
     private boolean checkHasMosquitos(int houseId) {
         try {
             // Build the URL of the HTTP GET request
-            String urlString = "https://domotify.net/api/mosquitos/getMosquitos.php";
+            String urlString = "https://domotify.net/api/mosquitos/getMosquito.php";
             String query = String.format("houseId=%d", houseId);
             urlString += "?" + query;
 
@@ -366,7 +377,7 @@ public class APPMain {
 
             // Parse the server's response
             JSONObject jsonResponse = new JSONObject(response);
-            String hasFridge = jsonResponse.getString("hasMosquitos");
+            String hasFridge = jsonResponse.getString("hasMosquito");
 
             if (hasFridge.equals("1")) {
                 return true;
@@ -607,16 +618,21 @@ public class APPMain {
         panel.add(manageCuenta);
         panel.add(manageBotonSoporte);
 
+        manageMusica.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean hasSpoti = checkHasSpoti(houseId);
+                if (hasSpoti) {
+                    manageSpotify(houseId);
+                } else {
+                    JOptionPane.showMessageDialog(null, "No tienes el Spotify configurado en esta casa.");
+                }
+            }
+        });
+
         // Agregar comportamiento al clic para cada botón
         manageFridgeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 manageFridge(houseId);
-            }
-        });
-
-        manageLedButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                manageLed(houseId);
             }
         });
 
@@ -631,11 +647,22 @@ public class APPMain {
             }
         });
 
+        manageBZZ.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean hasMosquitos = checkHasMosquitos(houseId);
+                if (hasMosquitos) {
+                    manageMosquitos(houseId);
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay anti mosquitos en esta casa.");
+                }
+            }
+        });
+
         manageLedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean hasLed = checkHasLed(houseId);
                 if (hasLed) {
-                    // Código para manejar las luces LED aquí
+                   manageLed(houseId);
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay luces LED en esta casa.");
                 }
@@ -862,6 +889,340 @@ public class APPMain {
         // Mostrar la interfaz de usuario
         frame.setVisible(true);
     }
+
+    private void manageSpotify(int houseId) {
+        boolean hasSpoti = checkHasSpoti(houseId);
+        if (!hasSpoti) {
+            JOptionPane.showMessageDialog(null, "No hay Spotify configurado en esta casa.");
+            return;
+        }
+
+        // Crear el panel y los componentes
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+
+        JLabel ledNameLabel = new JLabel("Nombre del frigorífico:");
+        ledNameLabel.setOpaque(true);
+        ledNameLabel.setBackground(Color.BLACK);
+        ledNameLabel.setForeground(Color.WHITE);
+        JTextField ledNameTextField = new JTextField(10);
+
+        JLabel ledRLabel = new JLabel("Nombre del frigorífico:");
+        ledRLabel.setOpaque(true);
+        ledRLabel.setBackground(Color.BLACK);
+        ledRLabel.setForeground(Color.WHITE);
+        JTextField ledRTextField = new JTextField(10);
+
+        JLabel ledGLabel = new JLabel("Nombre del frigorífico:");
+        ledGLabel.setOpaque(true);
+        ledGLabel.setBackground(Color.BLACK);
+        ledGLabel.setForeground(Color.WHITE);
+        JTextField ledGTextField = new JTextField(10);
+
+        JLabel ledBLabel = new JLabel("Nombre del frigorífico:");
+        ledBLabel.setOpaque(true);
+        ledBLabel.setBackground(Color.BLACK);
+        ledBLabel.setForeground(Color.WHITE);
+        JTextField ledBTextField = new JTextField(10);
+
+        JLabel ledModeLabel = new JLabel("Nombre del frigorífico:");
+        ledModeLabel.setOpaque(true);
+        ledModeLabel.setBackground(Color.BLACK);
+        ledModeLabel.setForeground(Color.WHITE);
+        JTextField ledModeTextField = new JTextField(10);
+        JButton saveButton = new JButton("Guardar cambios");
+
+
+
+        // Añadir los componentes al panel
+        panel.add(ledNameLabel);
+        panel.add(ledNameTextField);
+        panel.add(ledRLabel);
+        panel.add(ledRTextField);
+        panel.add(ledGLabel);
+        panel.add(ledGTextField);
+        panel.add(ledBLabel);
+        panel.add(ledBTextField);
+        panel.add(ledModeLabel);
+        panel.add(ledModeTextField);
+        panel.add(saveButton);
+
+        // Agregar comportamiento al clic del botón de guardar
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String ledName = ledNameTextField.getText();
+                String ledR = ledRTextField.getText();
+                String ledG = ledGTextField.getText();
+                String ledB = ledBTextField.getText();
+                String ledMode = ledModeTextField.getText();
+
+
+
+                // Construir los datos para enviar
+                String urlParameters = "houseId=" + houseId + "&hasLed=1" + "&ledName=" + ledName + "&ledR=" + ledR + "&ledG=" + ledG + "&ledB=" + ledB + "&ledMode=" + ledMode;
+
+                // Crear conexión y enviar los datos
+                try {
+                    URL url = new URL("https://domotify.net/api/led/updateLed.php");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(urlParameters);
+                    wr.flush();
+                    wr.close();
+
+                    // Leer respuesta del servidor
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+
+                    // Cerrar conexiones
+                    in.close();
+                    connection.disconnect();
+
+                    // Manejar respuesta
+                    String response = content.toString();
+                    if (response.equals("success")) {
+                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // Crear el marco para la interfaz de usuario
+        // Crear el marco para la interfaz de usuario
+        JFrame frame = new JFrame("Gestión de LEDS");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
+        frame.setSize(675, 675);
+
+        // Crear un JLayeredPane para permitir la superposición de componentes
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+
+        // Cargar imagen de fondo
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/leds.png");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+
+        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
+
+        // Ajustar el tamaño y la posición del panel
+        panel.setBounds(100, 100, 230, 160);  // Puedes ajustar estos valores según sea necesario
+
+        // Añadir el panel al JLayeredPane en un nivel superior
+        layeredPane.add(panel, Integer.valueOf(1));
+
+        // Añadir el JLayeredPane al JFrame
+        frame.add(layeredPane);
+
+        frame.setLocationRelativeTo(null);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
+    }
+
+
+
+
+    private void manageMosquitos(int houseId) {
+        boolean hasMosquitos = checkHasMosquitos(houseId);
+        if (!hasMosquitos) {
+            JOptionPane.showMessageDialog(null, "No hay anti mosquitos en esta casa.");
+            return;
+        }
+
+        // Crear el panel y los componentes
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // Añadir esto para organizar los elementos verticalmente
+
+        JLabel hab1Label = new JLabel("Habitacion 1:");
+        JTextField hab1TextField = new JTextField(4);
+        JCheckBox hab1Check = new JCheckBox("Encender/Apagar");
+
+        JLabel hab2Label = new JLabel("Habitacion 2:");
+        JTextField hab2TextField = new JTextField(4);
+        JCheckBox hab2Check = new JCheckBox("Encender/Apagar");
+
+        JLabel hab3Label = new JLabel("Habitacion 3:");
+        JTextField hab3TextField = new JTextField(4);
+        JCheckBox hab3Check = new JCheckBox("Encender/Apagar");
+
+        JCheckBox salonCheck = new JCheckBox("Encender/Apagar Salon");
+        JCheckBox cocinaCheck = new JCheckBox("Encender/Apagar Cocina");
+        JCheckBox banoCheck = new JCheckBox("Encender/Apagar Baño");
+        JCheckBox planta1Check = new JCheckBox("Encender/Apagar Planta 1");
+        JCheckBox planta2Check = new JCheckBox("Encender/Apagar Planta 2");
+
+        JButton saveButton = new JButton("Guardar cambios");
+
+        // Añadir los componentes al panel
+        panel.add(hab1Label);
+        panel.add(hab1TextField);
+        panel.add(hab1Check);
+        panel.add(hab2Label);
+        panel.add(hab2TextField);
+        panel.add(hab2Check);
+        panel.add(hab3Label);
+        panel.add(hab3TextField);
+        panel.add(hab3Check);
+        panel.add(salonCheck);
+        panel.add(cocinaCheck);
+        panel.add(banoCheck);
+        panel.add(planta1Check);
+        panel.add(planta2Check);
+        panel.add(saveButton);
+
+        // Agregar comportamiento al clic del botón de guardar
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String nameHab1 = hab1TextField.getText();
+                String nameHab2 = hab2TextField.getText();
+                String nameHab3 = hab3TextField.getText();
+                int hab1 = hab1Check.isSelected() ? 1 : 0;
+                int hab2 = hab2Check.isSelected() ? 1 : 0;
+                int hab3 = hab3Check.isSelected() ? 1 : 0;
+                int salon = salonCheck.isSelected() ? 1 : 0;
+                int cocina = cocinaCheck.isSelected() ? 1 : 0;
+                int bano = banoCheck.isSelected() ? 1 : 0;
+                int planta1 = planta1Check.isSelected() ? 1 : 0;
+                int planta2 = planta2Check.isSelected() ? 1 : 0;
+
+                // Construir los datos para enviar
+                String urlParameters = "idMosquito=" + houseId +
+                        "&houseId=" + houseId +
+                        "&hasMosquito=1" +
+                        "&NameHab1=" + nameHab1 +
+                        "&NameHab2=" + nameHab2 +
+                        "&NameHab3=" + nameHab3 +
+                        "&Habitacion1=" + hab1 +
+                        "&Habitacion2=" + hab2 +
+                        "&Habitacion3=" + hab3 +
+                        "&Salon=" + salon +
+                        "&Cocina=" + cocina +
+                        "&Baño=" + bano +
+                        "&Planta1=" + planta1 +
+                        "&Planta2=" + planta2 +
+                        "&modeMosquito=active";
+
+
+                // Crear conexión y enviar los datos
+                try {
+                    URL url = new URL("https://domotify.net/api/mosquitos/updateMosquito.php");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(urlParameters);
+                    wr.flush();
+                    wr.close();
+
+                    // Leer respuesta del servidor
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder content = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+
+                    // Cerrar conexiones
+                    in.close();
+                    connection.disconnect();
+
+                    // Manejar respuesta
+                    String response = content.toString();
+                    if (response.equals("ok")) {
+                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        try {
+            URL url = new URL("https://domotify.net/api/mosquitos/getMosquito.php?houseId=" + houseId);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Leer respuesta del servidor
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+
+            // Cerrar conexiones
+            in.close();
+            connection.disconnect();
+
+            // Parsear respuesta a JSON
+            JSONObject json = new JSONObject(content.toString());
+
+            // Asignar los valores existentes a los campos de texto
+            hab1TextField.setText(json.getString("NameHab1"));
+            hab2TextField.setText(json.getString("NameHab2"));
+            hab3TextField.setText(json.getString("NameHab3"));
+            hab1Check.setSelected(json.getInt("Habitacion1") == 1);
+            hab2Check.setSelected(json.getInt("Habitacion2") == 1);
+            hab3Check.setSelected(json.getInt("Habitacion3") == 1);
+            salonCheck.setSelected(json.getInt("Salon") == 1);
+            cocinaCheck.setSelected(json.getInt("Cocina") == 1);
+            banoCheck.setSelected(json.getInt("Baño") == 1);
+            planta1Check.setSelected(json.getInt("Planta1") == 1);
+            planta2Check.setSelected(json.getInt("Planta2") == 1);
+
+        } catch (IOException | JSONException ex) {
+            ex.printStackTrace();
+        }
+
+        // Crear el marco para la interfaz de usuario
+        JFrame frame = new JFrame("Gestión de Anti Mosquitos");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
+        frame.setSize(675, 675);
+
+        // Crear un JLayeredPane para permitir la superposición de componentes
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 675, 675);
+
+        // Cargar imagen de fondo
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/mosquitos.png");
+        JLabel backgroundLabel = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 675, 675);
+
+        // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
+
+        // Ajustar el tamaño y la posición del panel
+        panel.setBounds(30, 75, 520, 420); // Tamaño aumentado para acomodar los nuevos elementos
+
+        // Añadir el panel al JLayeredPane en un nivel superior
+        layeredPane.add(panel, Integer.valueOf(1));
+
+        // Añadir el JLayeredPane al JFrame
+        frame.add(layeredPane);
+
+        frame.setLocationRelativeTo(null);
+
+        // Mostrar la interfaz de usuario
+        frame.setVisible(true);
+    }
+
+
 
 
     private void manageFridge(int houseId) {
@@ -1099,7 +1460,7 @@ public class APPMain {
 
     // FALTA POR ACABAR !!
     private void manageSoporte(int houseId) {
-        // Tus credenciales de Twilio
+
         String ACCOUNT_SID = "";
         String AUTH_TOKEN = "";
 
@@ -1208,18 +1569,18 @@ public class APPMain {
 
         // Crear un JLayeredPane para permitir la superposición de componentes
         JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+        layeredPane.setBounds(0, 0, 675, 675);
 
         // Cargar imagen de fondo
         ImageIcon backgroundImage = new ImageIcon("src/main/java/img/garaje.png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
-        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+        backgroundLabel.setBounds(0, 0, 675, 675);
 
         // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
         layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Ajustar el tamaño y la posición del panel
-        panel.setBounds(50, 50, 230, 160);  // Puedes ajustar estos valores según sea necesario
+        panel.setBounds(50, 50, 230, 160);
 
         // Añadir el panel al JLayeredPane en un nivel superior
         layeredPane.add(panel, Integer.valueOf(1));

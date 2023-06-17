@@ -27,7 +27,11 @@
             <artifactId>twilio</artifactId>
             <version>9.6.2</version>
         </dependency>
-
+            <dependency>
+                <groupId>se.michaelthelin.spotify</groupId>
+                <artifactId>spotify-web-api-java</artifactId>
+                <version>6.5.2</version>
+            </dependency>
 
 
 
