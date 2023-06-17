@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 
 //commit
 public class APPMain {
+    String versionDom = "1.2";
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
@@ -29,16 +30,16 @@ public class APPMain {
 
     public APPMain() {
         // Configurar la ventana principal
-        JFrame frame = new JFrame("DOMOTIFY v1.2: Transformando hogares, conectando vidas.");
+        JFrame frame = new JFrame("DOMOTIFY v" + versionDom + ": Transformando hogares, conectando vidas.");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(createLoginPanel());
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.getRootPane().setDefaultButton(loginButton); // Mover esta línea aquí
+        frame.getRootPane().setDefaultButton(loginButton);
         frame.setVisible(true);
     }
 
-    //commit prueba
+
 
     private JPanel createLoginPanel() {
         JPanel loginPanel = new JPanel(new BorderLayout());
@@ -564,9 +565,9 @@ public class APPMain {
         ImageIcon manageHotIcon = new ImageIcon("src/main/java/img/hotIcon.png");
         ImageIcon manageBZZIcon = new ImageIcon("src/main/java/img/BZZIcon.png");
         //3mas
-        ImageIcon manageRoombaIcon = new ImageIcon("src/main/java/img/roombaIcon.png");
-        ImageIcon manageAltavocesIcon = new ImageIcon("src/main/java/img/altavocesIcon.png");
-        ImageIcon manageCocinaIcon = new ImageIcon("src/main/java/img/soporte.png");
+        ImageIcon manageMusicaIcon = new ImageIcon("src/main/java/img/MusicaIcon.png");
+        ImageIcon manageCuentaIcon = new ImageIcon("src/main/java/img/MiCuentaIcon.png");
+        ImageIcon manageSoporteIcon = new ImageIcon("src/main/java/img/soporte.png");
 
         JButton manageFridgeButton = new JButton("Gestionar Frigorífico");
         manageFridgeButton.setIcon(fridgeIcon);  // Añadir ícono al botón
@@ -586,14 +587,14 @@ public class APPMain {
         JButton manageBZZ = new JButton("Gestionar Anti-Mosquitos");
         manageBZZ.setIcon(manageBZZIcon);  // Añadir ícono al botón
 
-        JButton manageRoomba = new JButton("Gestionar Roomba");
-        manageRoomba.setIcon(manageRoombaIcon);  // Añadir ícono al botón
+        JButton manageMusica = new JButton("Gestionar Musica");
+        manageMusica.setIcon(manageMusicaIcon);  // Añadir ícono al botón
 
-        JButton manageAltavoces = new JButton("Gestionar Altavoces");
-        manageAltavoces.setIcon(manageAltavocesIcon);  // Añadir ícono al botón
+        JButton manageCuenta = new JButton("Gestionar Mi Cuenta");
+        manageCuenta.setIcon(manageCuentaIcon);  // Añadir ícono al botón
 
-        JButton manageCocina = new JButton("Soporte Tecnico");
-        manageCocina.setIcon(manageCocinaIcon);  // Añadir ícono al botón
+        JButton manageBotonSoporte = new JButton("Soporte Tecnico");
+        manageBotonSoporte.setIcon(manageSoporteIcon);  // Añadir ícono al botón
 
         // Añadir los botones al panel
         panel.add(manageFridgeButton);
@@ -602,9 +603,9 @@ public class APPMain {
         panel.add(manageCamButton);
         panel.add(manageHot);
         panel.add(manageBZZ);
-        panel.add(manageRoomba);
-        panel.add(manageAltavoces);
-        panel.add(manageCocina);
+        panel.add(manageMusica);
+        panel.add(manageCuenta);
+        panel.add(manageBotonSoporte);
 
         // Agregar comportamiento al clic para cada botón
         manageFridgeButton.addActionListener(new ActionListener() {
@@ -623,7 +624,7 @@ public class APPMain {
             public void actionPerformed(ActionEvent e) {
                 boolean hasGarage = checkHasGarage(houseId);
                 if (hasGarage) {
-                   manageGarage(houseId);
+                    manageGarage(houseId);
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay garaje en esta casa.");
                 }
@@ -645,14 +646,14 @@ public class APPMain {
             public void actionPerformed(ActionEvent e) {
                 boolean hasCam = checkHasCam(houseId);
                 if (hasCam) {
-                    // Código para manejar la cámara aquí
+
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay cámara en esta casa.");
                 }
             }
         });
 
-        manageCocina.addActionListener(new ActionListener() {
+        manageBotonSoporte.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 manageSoporte(1);
             }
@@ -671,7 +672,7 @@ public class APPMain {
         });
 
         // Crear el marco para la interfaz de usuario
-        JFrame frame = new JFrame("Panel de Administracion | Domotify v1.2");
+        JFrame frame = new JFrame("Panel de Administracion | Domotify v" + versionDom);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 350);  // Modificar tamaño de ventana para acomodar 3 botones por fila
 
