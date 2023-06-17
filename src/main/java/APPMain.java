@@ -267,6 +267,8 @@ public class APPMain {
         return false;
     }
 
+
+
     private void openDomoticsManagementWindow(boolean isAdmin, String username) {
         int ownerHouse = checkOwnerHouse(username);
 
@@ -277,8 +279,7 @@ public class APPMain {
                 openChildDashboard();
             }
         } else {
-            String msg = "¡Hola " + username + "!\nLamentamos informarte que tu cuenta no dispone de ningun producto ACTIVADO de Domotify.\nEn este caso tienes que ponerte en contacto con nuestro equipo de atencion al cliente para que podamos activarte los productos y configurarlos correctamente.\n\nAtencion al cliente 24h / Urgencias:\ninfo@domotify.net | +34698905854 | domotify.net";
-            JOptionPane.showMessageDialog(null, msg);
+            mensajeLlamada(ownerHouse, username);
         }
     }
 
@@ -622,10 +623,18 @@ public class APPMain {
             public void actionPerformed(ActionEvent e) {
                 boolean hasSpoti = checkHasSpoti(houseId);
                 if (hasSpoti) {
-                    manageSpotify(houseId);
+                   // aqui iria: manageSpotify(houseId); pero como no lo hemos acabado pues ponemos un mensaje de error.
+                    // queremos implementar la API de Spotify pero es bastante dificil
+                    JOptionPane.showMessageDialog(null, "Error. Matenimiento temporal. Por favor, cualquier incidencia contacta con Domotify.");
                 } else {
                     JOptionPane.showMessageDialog(null, "No tienes el Spotify configurado en esta casa.");
                 }
+            }
+        });
+
+        manageCuenta.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                manageAccount(houseId);
             }
         });
 
@@ -673,7 +682,7 @@ public class APPMain {
             public void actionPerformed(ActionEvent e) {
                 boolean hasCam = checkHasCam(houseId);
                 if (hasCam) {
-
+                    manageCam(houseId);
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay cámara en esta casa.");
                 }
@@ -749,134 +758,143 @@ public class APPMain {
         }
     }
 
-    private void manageLed(int houseId) {
-        boolean hasLed = checkHasLed(houseId);
-        if (!hasLed) {
-            JOptionPane.showMessageDialog(null, "No hay luces LED en esta casa.");
+
+    private void manageCam(int houseId) {
+        boolean hasCam = checkHasCam(houseId);
+        if (!hasCam) {
+            JOptionPane.showMessageDialog(null, "No hay camara de videovigilancia en esta casa.");
             return;
         }
+        JFrame videoFrame = new JFrame("Videovigilancia");
+        videoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        videoFrame.setSize(800, 600);
 
+        // Panel principal
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setPreferredSize(new Dimension(800, 750));
+
+        // Foto del profesor arriba en el panel principal
+        ImageIcon mainPhotoIcon = new ImageIcon("src/main/java/img/caminas.jpeg");
+        Image mainScaledImage = mainPhotoIcon.getImage().getScaledInstance(800, 750, Image.SCALE_SMOOTH);
+        ImageIcon mainScaledIcon = new ImageIcon(mainScaledImage);
+        JLabel mainPhotoLabel = new JLabel(mainScaledIcon);
+        mainPhotoLabel.setBounds(0, 0, 800, 750);
+        layeredPane.add(mainPhotoLabel, JLayeredPane.DEFAULT_LAYER);
+
+// Panel central con el texto "Cámara de Vigilancia 001 Pasillo Central Piso 2"
+        JLabel camLabel = new JLabel("Cámara de Vigilancia 001 Pasillo Central Piso 2");
+        camLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        camLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        camLabel.setForeground(Color.WHITE);
+        camLabel.setBounds(0, 0, 800, 30);
+        layeredPane.add(camLabel, JLayeredPane.PALETTE_LAYER);
+
+
+        // Panel inferior con el texto "Profesor de guardia: Victor Ponz"
+        JLabel guardLabel = new JLabel("Profesor de guardia:");
+        guardLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        guardLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        guardLabel.setForeground(Color.WHITE);
+        guardLabel.setBounds(0, 550, 800, 20);
+        layeredPane.add(guardLabel, JLayeredPane.PALETTE_LAYER);
+
+        // Panel inferior con la foto del profesor y su nombre
+        JPanel photoPanel = new JPanel(new BorderLayout());
+        photoPanel.setBackground(Color.WHITE);
+        photoPanel.setBounds(325, 570, 150, 150);
+
+        ImageIcon photoIcon = new ImageIcon("src/main/java/img/victor.jpg");
+        Image scaledImage = photoIcon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+
+        JLabel photoLabel = new JLabel(scaledIcon, SwingConstants.CENTER);
+        photoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JLabel nameLabel = new JLabel("Victor Ponz", SwingConstants.CENTER);
+        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+
+        photoPanel.add(photoLabel, BorderLayout.CENTER);
+        photoPanel.add(nameLabel, BorderLayout.SOUTH);
+        layeredPane.add(photoPanel, JLayeredPane.PALETTE_LAYER);
+
+        videoFrame.getContentPane().add(layeredPane);
+        videoFrame.pack();
+        videoFrame.setVisible(true);
+    }
+
+
+    private void manageAccount(int houseId) {
         // Crear el panel y los componentes
         JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         panel.setOpaque(false);
 
-        JLabel ledNameLabel = new JLabel("Nombre del frigorífico:");
-        ledNameLabel.setOpaque(true);
-        ledNameLabel.setBackground(Color.BLACK);
-        ledNameLabel.setForeground(Color.WHITE);
-        JTextField ledNameTextField = new JTextField(10);
+        JButton exportButton = new JButton("Exportar datos");
 
-        JLabel ledRLabel = new JLabel("Nombre del frigorífico:");
-        ledRLabel.setOpaque(true);
-        ledRLabel.setBackground(Color.BLACK);
-        ledRLabel.setForeground(Color.WHITE);
-        JTextField ledRTextField = new JTextField(10);
+        // Realizar la petición a la API para obtener los datos de la cuenta
+        try {
+            URL url = new URL("https://domotify.net/api/account/getAccount.php?houseId=" + houseId);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
 
-        JLabel ledGLabel = new JLabel("Nombre del frigorífico:");
-        ledGLabel.setOpaque(true);
-        ledGLabel.setBackground(Color.BLACK);
-        ledGLabel.setForeground(Color.WHITE);
-        JTextField ledGTextField = new JTextField(10);
+            // Leer respuesta del servidor
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
 
-        JLabel ledBLabel = new JLabel("Nombre del frigorífico:");
-        ledBLabel.setOpaque(true);
-        ledBLabel.setBackground(Color.BLACK);
-        ledBLabel.setForeground(Color.WHITE);
-        JTextField ledBTextField = new JTextField(10);
+            // Cerrar conexiones
+            in.close();
+            connection.disconnect();
 
-        JLabel ledModeLabel = new JLabel("Nombre del frigorífico:");
-        ledModeLabel.setOpaque(true);
-        ledModeLabel.setBackground(Color.BLACK);
-        ledModeLabel.setForeground(Color.WHITE);
-        JTextField ledModeTextField = new JTextField(10);
-        JButton saveButton = new JButton("Guardar cambios");
+            // Transformar los datos JSON en un objeto de Java
+            JSONObject accountData = new JSONObject(content.toString());
 
+            JLabel userLabel = new JLabel("Usuario: " + accountData.getString("usuario"));
+            JLabel fridgeLabel = new JLabel("Frigorifico: " + accountData.getString("frigorifico"));
+            JLabel camerasLabel = new JLabel("Camaras: " + accountData.getString("camaras"));
 
+            panel.add(userLabel);
+            panel.add(fridgeLabel);
+            panel.add(camerasLabel);
 
-        // Añadir los componentes al panel
-        panel.add(ledNameLabel);
-        panel.add(ledNameTextField);
-        panel.add(ledRLabel);
-        panel.add(ledRTextField);
-        panel.add(ledGLabel);
-        panel.add(ledGTextField);
-        panel.add(ledBLabel);
-        panel.add(ledBTextField);
-        panel.add(ledModeLabel);
-        panel.add(ledModeTextField);
-        panel.add(saveButton);
+        } catch (IOException | JSONException ex) {
+            ex.printStackTrace();
+        }
 
-        // Agregar comportamiento al clic del botón de guardar
-        saveButton.addActionListener(new ActionListener() {
+        // Agregar comportamiento al clic del botón de exportar
+        exportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String ledName = ledNameTextField.getText();
-                String ledR = ledRTextField.getText();
-                String ledG = ledGTextField.getText();
-                String ledB = ledBTextField.getText();
-                String ledMode = ledModeTextField.getText();
+                try (PrintWriter out = new PrintWriter("datosCuenta.txt")) {
 
-
-
-                // Construir los datos para enviar
-                String urlParameters = "houseId=" + houseId + "&hasLed=1" + "&ledName=" + ledName + "&ledR=" + ledR + "&ledG=" + ledG + "&ledB=" + ledB + "&ledMode=" + ledMode;
-
-                // Crear conexión y enviar los datos
-                try {
-                    URL url = new URL("https://domotify.net/api/led/updateLed.php");
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("POST");
-                    connection.setDoOutput(true);
-
-                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-                    wr.writeBytes(urlParameters);
-                    wr.flush();
-                    wr.close();
-
-                    // Leer respuesta del servidor
-                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String inputLine;
-                    StringBuilder content = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null) {
-                        content.append(inputLine);
-                    }
-
-                    // Cerrar conexiones
-                    in.close();
-                    connection.disconnect();
-
-                    // Manejar respuesta
-                    String response = content.toString();
-                    if (response.equals("success")) {
-                        JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Hubo un error al guardar los cambios.");
-                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
         });
 
+        panel.add(exportButton);
+
         // Crear el marco para la interfaz de usuario
-        // Crear el marco para la interfaz de usuario
-        JFrame frame = new JFrame("Gestión de LEDS");
+        JFrame frame = new JFrame("Gestión de Cuenta");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
         frame.setSize(675, 675);
 
         // Crear un JLayeredPane para permitir la superposición de componentes
         JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+        layeredPane.setBounds(0, 0, 675, 675);
 
         // Cargar imagen de fondo
-        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/leds.png");
+        ImageIcon backgroundImage = new ImageIcon("src/main/java/img/account.png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
-        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+        backgroundLabel.setBounds(0, 0, 675, 675);
 
         // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
         layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Ajustar el tamaño y la posición del panel
-        panel.setBounds(100, 100, 230, 160);  // Puedes ajustar estos valores según sea necesario
+        panel.setBounds(50, 120, 400, 500); // Tamaño aumentado para acomodar los nuevos elementos
 
         // Añadir el panel al JLayeredPane en un nivel superior
         layeredPane.add(panel, Integer.valueOf(1));
@@ -890,10 +908,10 @@ public class APPMain {
         frame.setVisible(true);
     }
 
-    private void manageSpotify(int houseId) {
-        boolean hasSpoti = checkHasSpoti(houseId);
-        if (!hasSpoti) {
-            JOptionPane.showMessageDialog(null, "No hay Spotify configurado en esta casa.");
+    private void manageLed(int houseId) {
+        boolean hasLed = checkHasLed(houseId);
+        if (!hasLed) {
+            JOptionPane.showMessageDialog(null, "No hay luces LED en esta casa.");
             return;
         }
 
@@ -901,61 +919,83 @@ public class APPMain {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
 
-        JLabel ledNameLabel = new JLabel("Nombre del frigorífico:");
+        JLabel ledNameLabel = new JLabel("Nombre de LED:");
         ledNameLabel.setOpaque(true);
         ledNameLabel.setBackground(Color.BLACK);
         ledNameLabel.setForeground(Color.WHITE);
         JTextField ledNameTextField = new JTextField(10);
 
-        JLabel ledRLabel = new JLabel("Nombre del frigorífico:");
-        ledRLabel.setOpaque(true);
-        ledRLabel.setBackground(Color.BLACK);
-        ledRLabel.setForeground(Color.WHITE);
-        JTextField ledRTextField = new JTextField(10);
+        JButton colorChooserButton = new JButton("Elige el color");
+        Color[] selectedColor = new Color[1];
 
-        JLabel ledGLabel = new JLabel("Nombre del frigorífico:");
-        ledGLabel.setOpaque(true);
-        ledGLabel.setBackground(Color.BLACK);
-        ledGLabel.setForeground(Color.WHITE);
-        JTextField ledGTextField = new JTextField(10);
-
-        JLabel ledBLabel = new JLabel("Nombre del frigorífico:");
-        ledBLabel.setOpaque(true);
-        ledBLabel.setBackground(Color.BLACK);
-        ledBLabel.setForeground(Color.WHITE);
-        JTextField ledBTextField = new JTextField(10);
-
-        JLabel ledModeLabel = new JLabel("Nombre del frigorífico:");
+        JLabel ledModeLabel = new JLabel("Estado del LED:");
         ledModeLabel.setOpaque(true);
         ledModeLabel.setBackground(Color.BLACK);
         ledModeLabel.setForeground(Color.WHITE);
-        JTextField ledModeTextField = new JTextField(10);
+        String[] ledStates = {"ON", "OFF"};
+        JComboBox<String> ledStateComboBox = new JComboBox<>(ledStates);
+
+
         JButton saveButton = new JButton("Guardar cambios");
-
-
 
         // Añadir los componentes al panel
         panel.add(ledNameLabel);
         panel.add(ledNameTextField);
-        panel.add(ledRLabel);
-        panel.add(ledRTextField);
-        panel.add(ledGLabel);
-        panel.add(ledGTextField);
-        panel.add(ledBLabel);
-        panel.add(ledBTextField);
+        panel.add(colorChooserButton);
         panel.add(ledModeLabel);
-        panel.add(ledModeTextField);
+        panel.add(ledStateComboBox);
         panel.add(saveButton);
+
+        // Obtener datos existentes de la base de datos
+        try {
+            URL url = new URL("https://domotify.net/api/led/getLed.php?houseId=" + houseId);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+
+            // Cerrar conexiones
+            in.close();
+            connection.disconnect();
+
+            // Parse response
+            JSONObject ledData = new JSONObject(content.toString());
+
+            ledNameTextField.setText(ledData.getString("ledName"));
+            int r = ledData.getInt("ledR");
+            int g = ledData.getInt("ledG");
+            int b = ledData.getInt("ledB");
+            selectedColor[0] = new Color(r, g, b);
+            colorChooserButton.setBackground(selectedColor[0]);
+            String ledStateFromDb = ledData.getString("ledMode");
+            ledStateComboBox.setSelectedItem(ledStateFromDb);
+
+
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        // Comportamiento del botón del selector de color
+        colorChooserButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                selectedColor[0] = JColorChooser.showDialog(null, "Seleccione un color", selectedColor[0]);
+                colorChooserButton.setBackground(selectedColor[0]);
+            }
+        });
 
         // Agregar comportamiento al clic del botón de guardar
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String ledName = ledNameTextField.getText();
-                String ledR = ledRTextField.getText();
-                String ledG = ledGTextField.getText();
-                String ledB = ledBTextField.getText();
-                String ledMode = ledModeTextField.getText();
-
+                String ledR = String.valueOf(selectedColor[0].getRed());
+                String ledG = String.valueOf(selectedColor[0].getGreen());
+                String ledB = String.valueOf(selectedColor[0].getBlue());
+                String ledMode = (String) ledStateComboBox.getSelectedItem();
 
 
                 // Construir los datos para enviar
@@ -999,7 +1039,6 @@ public class APPMain {
         });
 
         // Crear el marco para la interfaz de usuario
-        // Crear el marco para la interfaz de usuario
         JFrame frame = new JFrame("Gestión de LEDS");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
         frame.setSize(675, 675);
@@ -1017,7 +1056,7 @@ public class APPMain {
         layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Ajustar el tamaño y la posición del panel
-        panel.setBounds(100, 100, 230, 160);  // Puedes ajustar estos valores según sea necesario
+        panel.setBounds(300, 140, 160, 300);  // Puedes ajustar estos valores según sea necesario
 
         // Añadir el panel al JLayeredPane en un nivel superior
         layeredPane.add(panel, Integer.valueOf(1));
@@ -1029,6 +1068,17 @@ public class APPMain {
 
         // Mostrar la interfaz de usuario
         frame.setVisible(true);
+    }
+
+
+
+    private void manageSpotify(int houseId) {
+        boolean hasSpoti = checkHasSpoti(houseId);
+        if (!hasSpoti) {
+            JOptionPane.showMessageDialog(null, "No hay Spotify configurado en esta casa.");
+            return;
+        }
+
     }
 
 
@@ -1495,9 +1545,10 @@ public class APPMain {
 
         // Crear el panel y los componentes
         JPanel panel = new JPanel();
-        JSlider garageTempSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
+        JLabel garageTextMin = new JLabel("Temporizador garaje en minutos:");
+        JSlider garageTempSlider = new JSlider(JSlider.HORIZONTAL, 0, 60, 0);
         JLabel garageModeLabel = new JLabel("Modo del garaje:");
-        String[] garageModes = { "Abierto", "Cerrado", "Custom" };
+        String[] garageModes = { "Abrir ahora", "Cerrar ahora", "Abrir con Temporizador", "Cerrar con Temporizador" };
         JComboBox<String> garageModeComboBox = new JComboBox<>(garageModes);
         JButton saveButton = new JButton("Guardar cambios");
 
@@ -1510,6 +1561,7 @@ public class APPMain {
 
 
         // Añadir los componentes al panel
+        panel.add(garageTextMin);
         panel.add(garageTempSlider);
         panel.add(garageModeLabel);
         panel.add(garageModeComboBox);
@@ -1593,6 +1645,49 @@ public class APPMain {
         // Mostrar la interfaz de usuario
         frame.setVisible(true);
     }
+
+    private void mensajeLlamada(int houseId, String username) {
+        String msg = "¡Hola " + username + "!\nLamentamos informarte que tu cuenta no dispone de ningun producto ACTIVADO de Domotify.\nEn este caso tienes que ponerte en contacto con nuestro equipo de atencion al cliente para que podamos activarte los productos y configurarlos correctamente.\n\nAtencion al cliente 24h / Urgencias:\ninfo@domotify.net | +34698905854 | domotify.net";
+
+
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Tu cuenta no esta configurada. Por favor, contactanos. | Domotify v" + versionDom);
+        dialog.setLayout(new BorderLayout());
+        dialog.setModal(true);
+
+
+        JLabel label = new JLabel("<html>" + msg.replace("\n", "<br>") + "</html>");
+        label.setHorizontalAlignment(JLabel.CENTER);
+        dialog.add(label, BorderLayout.CENTER);
+
+        // Add buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        JButton okButton = new JButton("Ok");
+        okButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        buttonPanel.add(okButton);
+
+        JButton callButton = new JButton("Solicitar llamada de Domotify");
+        callButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                manageSoporte(houseId);
+                dialog.dispose();
+            }
+        });
+        buttonPanel.add(callButton);
+
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setSize(500, 300);
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+    }
+
 
 
     //ESTO SERIA PARA NIÑOS PERO NO DA TIEMPO A ACABARLO - EN FASE DE DESARROLLO..
