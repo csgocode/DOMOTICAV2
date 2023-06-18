@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.twilio.Twilio;
@@ -830,6 +831,9 @@ public class APPMain {
 
         JButton exportButton = new JButton("Exportar datos");
 
+        // Variables para almacenar los datos a exportar
+        StringBuilder exportData = new StringBuilder();
+
         // Realizar la petición a la API para obtener los datos de la cuenta
         try {
             URL url = new URL("https://domotify.net/api/account/getAccount.php?houseId=" + houseId);
@@ -851,13 +855,140 @@ public class APPMain {
             // Transformar los datos JSON en un objeto de Java
             JSONObject accountData = new JSONObject(content.toString());
 
+            // Llenar las etiquetas con los datos obtenidos
             JLabel userLabel = new JLabel("Usuario: " + accountData.getString("usuario"));
-            JLabel fridgeLabel = new JLabel("Frigorifico: " + accountData.getString("frigorifico"));
-            JLabel camerasLabel = new JLabel("Camaras: " + accountData.getString("camaras"));
-
+            exportData.append("Usuario: ").append(accountData.getString("usuario")).append("\n");
+            userLabel.setForeground(Color.WHITE);
             panel.add(userLabel);
-            panel.add(fridgeLabel);
+
+            // Camaras
+            JSONObject firstCamObject = accountData.getJSONArray("cams").getJSONObject(0);
+            String hasCam = firstCamObject.getString("hasCam");
+            JLabel camerasLabel = hasCam.equals("1") ? new JLabel("Camaras: DISPONIBLE") : new JLabel("Camaras: NO DISPONIBLE");
+            camerasLabel.setForeground(hasCam.equals("1") ? Color.GREEN : Color.RED);
             panel.add(camerasLabel);
+            if (hasCam.equals("1")) {
+                String camName = firstCamObject.getString("camName");
+                String camLink = firstCamObject.getString("camLink");
+                JLabel camNameLabel = new JLabel("Nombre de la Camara: " + camName);
+                camNameLabel.setForeground(Color.WHITE);
+                JLabel camLinkLabel = new JLabel("Link API Cam: " + camLink);
+                camLinkLabel.setForeground(Color.WHITE);
+                panel.add(camNameLabel);
+                panel.add(camLinkLabel);
+                exportData.append("Camaras: ").append(hasCam.equals("1") ? "DISPONIBLE" : "NO DISPONIBLE").append("\n");
+                exportData.append("Nombre de la Cámara: ").append(camName).append("\n");
+                exportData.append("Link API Cámara: ").append(camLink).append("\n");
+            }
+
+
+
+
+            // Frigorificos
+            JSONObject firstFridgeObject = accountData.getJSONArray("fridges").getJSONObject(0);
+            String hasFridge = firstFridgeObject.getString("hasFridge");
+            JLabel fridgeLabel = hasFridge.equals("1") ? new JLabel("Frigorifico: DISPONIBLE") : new JLabel("Frigorifico: NO DISPONIBLE");
+            fridgeLabel.setForeground(hasFridge.equals("1") ? Color.GREEN : Color.RED);
+            panel.add(fridgeLabel);
+            if (hasFridge.equals("1")) {
+                String fridgeName = firstFridgeObject.getString("fridgeName");
+                String fridgeTemp = firstFridgeObject.getString("fridgeTemp");
+                String fridgeMode = firstFridgeObject.getString("fridgeMode");
+                JLabel fridgeNameLabel = new JLabel("Nombre del frigorifico: " + fridgeName);
+                fridgeNameLabel.setForeground(Color.WHITE);
+                JLabel fridgeTempLabel = new JLabel("Temperatura actual: " + fridgeTemp);
+                fridgeTempLabel.setForeground(Color.WHITE);
+                JLabel fridgeModeLabel = new JLabel("Modo del frigorifico: " + fridgeMode);
+                fridgeModeLabel.setForeground(Color.WHITE);
+                panel.add(fridgeNameLabel);
+                panel.add(fridgeTempLabel);
+                panel.add(fridgeModeLabel);
+                exportData.append("Frigorifico: ").append(hasFridge.equals("1") ? "DISPONIBLE" : "NO DISPONIBLE").append("\n");
+                exportData.append("Nombre del Frigorífico: ").append(fridgeName).append("\n");
+                exportData.append("Temperatura actual: ").append(fridgeTemp).append("\n");
+                exportData.append("Modo del Frigorífico: ").append(fridgeMode).append("\n");
+
+            }
+
+
+
+            // Garaje
+            JSONObject firstGarageObject = accountData.getJSONArray("garages").getJSONObject(0);
+            String hasGarage = firstGarageObject.getString("hasGarage");
+            JLabel garageLabel = hasGarage.equals("1") ? new JLabel("Garaje: DISPONIBLE") : new JLabel("Garaje: NO DISPONIBLE");
+            garageLabel.setForeground(hasGarage.equals("1") ? Color.GREEN : Color.RED);
+            panel.add(garageLabel);
+            if (hasGarage.equals("1")) {
+                String garageMode = firstGarageObject.getString("modeGarage");
+                JLabel garageModeLabel = new JLabel("Modo del garaje actual: " + garageMode);
+                garageModeLabel.setForeground(Color.WHITE);
+                panel.add(garageModeLabel);
+                exportData.append("Garaje: ").append(hasGarage.equals("1") ? "DISPONIBLE" : "NO DISPONIBLE").append("\n");
+                exportData.append("Modo del Garaje actual: ").append(garageMode).append("\n");
+            }
+
+
+            // Mosquitos
+            JSONObject firstMosquitoObject = accountData.getJSONArray("antimosquitos").getJSONObject(0);
+            String hasMosquito = firstMosquitoObject.getString("hasMosquito");
+            JLabel mosquitoLabel = hasMosquito.equals("1") ? new JLabel("Anti-mosquito: DISPONIBLE") : new JLabel("Anti-mosquito: NO DISPONIBLE");
+            mosquitoLabel.setForeground(hasMosquito.equals("1") ? Color.GREEN : Color.RED);
+            exportData.append("Anti-mosquito: ").append(hasMosquito.equals("1") ? "DISPONIBLE" : "NO DISPONIBLE").append("\n");
+            panel.add(mosquitoLabel);
+
+            // Temperatura
+            JSONObject firstTempObject = accountData.getJSONArray("temperatura").getJSONObject(0);
+            String hasTemp = firstTempObject.getString("hasTemp");
+            JLabel tempLabel = hasTemp.equals("1") ? new JLabel("Control de temperatura: DISPONIBLE") : new JLabel("Control de temperatura: NO DISPONIBLE");
+            tempLabel.setForeground(hasTemp.equals("1") ? Color.GREEN : Color.RED);
+            panel.add(tempLabel);
+            if (hasTemp.equals("1")) {
+                String tempActual = firstTempObject.getString("tempActual");
+                String modeTemp = firstTempObject.getString("modeTemp");
+                JLabel tempActualLabel = new JLabel("Temperatura actual: " + tempActual);
+                tempActualLabel.setForeground(Color.WHITE);
+                JLabel modeTempLabel = new JLabel("Modo de temperatura: " + modeTemp);
+                modeTempLabel.setForeground(Color.WHITE);
+                panel.add(tempActualLabel);
+                panel.add(modeTempLabel);
+                exportData.append("Control de temperatura: ").append(hasTemp.equals("1") ? "DISPONIBLE" : "NO DISPONIBLE").append("\n");
+                exportData.append("Temperatura actual: ").append(tempActual).append("\n");
+                exportData.append("Modo de temperatura: ").append(modeTemp).append("\n");
+
+
+            }
+
+
+            // Leds
+            JSONObject firstLedObject = accountData.getJSONArray("leds").getJSONObject(0);
+            String hasLed = firstLedObject.getString("hasLed");
+            JLabel ledLabel = hasLed.equals("1") ? new JLabel("Luces LED: DISPONIBLE") : new JLabel("Luces LED: NO DISPONIBLE");
+            ledLabel.setForeground(hasLed.equals("1") ? Color.GREEN : Color.RED);
+            panel.add(ledLabel);
+            if (hasLed.equals("1")) {
+                String ledName = firstLedObject.getString("ledName");
+                String ledR = firstLedObject.getString("ledR");
+                String ledG = firstLedObject.getString("ledG");
+                String ledB = firstLedObject.getString("ledB");
+                String ledMode = firstLedObject.getString("ledMode");
+                JLabel ledNameLabel = new JLabel("Nombre del LED: " + ledName);
+                ledNameLabel.setForeground(Color.WHITE);
+                JLabel ledColorLabel = new JLabel("Color RGB: (" + ledR + ", " + ledG + ", " + ledB + ")");
+                ledColorLabel.setForeground(Color.WHITE);
+                JLabel ledModeLabel = new JLabel("Modo del LED: " + ledMode);
+                ledModeLabel.setForeground(Color.WHITE);
+                panel.add(ledNameLabel);
+                panel.add(ledColorLabel);
+                panel.add(ledModeLabel);
+                exportData.append("Luces LED: ").append(hasLed.equals("1") ? "DISPONIBLE" : "NO DISPONIBLE").append("\n");
+                exportData.append("Nombre del LED: ").append(ledName).append("\n");
+                exportData.append("Color RGB: (").append(ledR).append(", ").append(ledG).append(", ").append(ledB).append(")").append("\n");
+                exportData.append("Modo del LED: ").append(ledMode).append("\n");
+
+
+            }
+
+
 
         } catch (IOException | JSONException ex) {
             ex.printStackTrace();
@@ -867,7 +998,7 @@ public class APPMain {
         exportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try (PrintWriter out = new PrintWriter("datosCuenta.txt")) {
-
+                    out.println(exportData.toString());
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -894,7 +1025,7 @@ public class APPMain {
         layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Ajustar el tamaño y la posición del panel
-        panel.setBounds(50, 120, 400, 500); // Tamaño aumentado para acomodar los nuevos elementos
+        panel.setBounds(50, 120, 400, 500);
 
         // Añadir el panel al JLayeredPane en un nivel superior
         layeredPane.add(panel, Integer.valueOf(1));
@@ -907,6 +1038,10 @@ public class APPMain {
         // Mostrar la interfaz de usuario
         frame.setVisible(true);
     }
+
+
+
+
 
     private void manageLed(int houseId) {
         boolean hasLed = checkHasLed(houseId);
@@ -1038,25 +1173,25 @@ public class APPMain {
             }
         });
 
-        // Crear el marco para la interfaz de usuario
+        // Crear el marco para la interfaz
         JFrame frame = new JFrame("Gestión de LEDS");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo esta ventana, no toda la aplicación
         frame.setSize(675, 675);
 
         // Crear un JLayeredPane para permitir la superposición de componentes
         JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+        layeredPane.setBounds(0, 0, 675, 675);
 
         // Cargar imagen de fondo
         ImageIcon backgroundImage = new ImageIcon("src/main/java/img/leds.png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
-        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+        backgroundLabel.setBounds(0, 0, 675, 675);
 
         // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
         layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Ajustar el tamaño y la posición del panel
-        panel.setBounds(300, 140, 160, 300);  // Puedes ajustar estos valores según sea necesario
+        panel.setBounds(300, 140, 160, 300);
 
         // Añadir el panel al JLayeredPane en un nivel superior
         layeredPane.add(panel, Integer.valueOf(1));
@@ -1072,6 +1207,7 @@ public class APPMain {
 
 
 
+    //MANTENIMIENTO
     private void manageSpotify(int houseId) {
         boolean hasSpoti = checkHasSpoti(houseId);
         if (!hasSpoti) {
@@ -1369,18 +1505,18 @@ public class APPMain {
 
         // Crear un JLayeredPane para permitir la superposición de componentes
         JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+        layeredPane.setBounds(0, 0, 675, 675);
 
         // Cargar imagen de fondo
         ImageIcon backgroundImage = new ImageIcon("src/main/java/img/nevera.png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
-        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+        backgroundLabel.setBounds(0, 0, 675, 675);
 
         // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
         layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Ajustar el tamaño y la posición del panel
-        panel.setBounds(100, 100, 230, 160);  // Puedes ajustar estos valores según sea necesario
+        panel.setBounds(100, 100, 230, 160);
 
         // Añadir el panel al JLayeredPane en un nivel superior
         layeredPane.add(panel, Integer.valueOf(1));
@@ -1431,18 +1567,18 @@ public class APPMain {
 
         // Crear un JLayeredPane para permitir la superposición de componentes
         JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño del JFrame
+        layeredPane.setBounds(0, 0, 675, 675);
 
         // Cargar imagen de fondo
         ImageIcon backgroundImage = new ImageIcon("src/main/java/img/temperatura" + tempActual + ".png");
         JLabel backgroundLabel = new JLabel(backgroundImage);
-        backgroundLabel.setBounds(0, 0, 675, 675);  // Asegúrate de que este tamaño coincida con el tamaño de la imagen y el JFrame
+        backgroundLabel.setBounds(0, 0, 675, 675);
 
         // Añadir la etiqueta de imagen al JLayeredPane en el nivel más bajo
         layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Ajustar el tamaño y la posición del panel
-        panel.setBounds(94, 140, 200, 130);  // Puedes ajustar estos valores según sea necesario
+        panel.setBounds(94, 140, 200, 130);
 
         // Añadir el panel al JLayeredPane en un nivel superior
         layeredPane.add(panel, Integer.valueOf(1));
