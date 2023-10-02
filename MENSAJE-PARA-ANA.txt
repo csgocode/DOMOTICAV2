@@ -1,5 +1,0 @@
-Hola Ana, hemos terminado casi toda la aplicación, nos falta terminar el apartado de "Gestionar Mi Cuenta" para que se puedan descargar ficheros y ver todas las caracteristicas activadas.
-
-Lo haremos mañana domingo por la mañana, es una aplicacion bastante compleja y pensábamos que no ibamos a tardar tanto pero tuvimos complicaciones.
-
-La API de Spotify es muy limitada y no he podido hacer lo que queria
